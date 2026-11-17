@@ -1,0 +1,36 @@
+# Environments & Runtimes
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Builds & Outputs
+build/
+dist/
+out/
+target/
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+
+# Graphify & Knowledge Graph outputs
+graphify-out/
+!graphify-out/.gitkeep
+
+# Logs & Temporary files
+logs/
+*.log
+log.txt
+.DS_Store
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project dynamic caches
+.runtime/

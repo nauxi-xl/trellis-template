@@ -1,0 +1,25 @@
+{
+  "trellis": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "python3 .agents/hooks/session-start.py",
+        "timeout": 30
+      }
+    ],
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python3 .agents/hooks/inject-workflow-state.py",
+        "timeout": 30
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 .agents/hooks/session-end.py",
+        "timeout": 30
+      }
+    ]
+  }
+}
