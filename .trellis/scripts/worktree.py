@@ -390,9 +390,14 @@ def cmd_merge(args: argparse.Namespace) -> int:
 
 def cmd_remove(args: argparse.Namespace) -> int:
     """Remove a task worktree."""
-    task_dir, task_data = find_task_dir(args.task)
-    task_id = task_data.get("id") or task_dir.name
-    worktree_path = task_data.get("worktree_path") or f".trellis/worktrees/{task_id}"
+    try:
+        task_dir, task_data = find_task_dir(args.task)
+        task_id = task_data.get("id") or task_dir.name
+        worktree_path = task_data.get("worktree_path") or f".trellis/worktrees/{task_id}"
+    except FileNotFoundError:
+        task_dir = None
+        task_id = args.task
+        worktree_path = f".trellis/worktrees/{task_id}"
 
     w_dir = (REPO_ROOT / worktree_path).resolve()
     print(f"▶ Removing worktree for task '{task_id}' ({w_dir})...")
@@ -412,7 +417,8 @@ def cmd_remove(args: argparse.Namespace) -> int:
             return rc
 
     run_git(["worktree", "prune"])
-    update_task_json(task_dir, {"worktree_path": None})
+    if task_dir is not None:
+        update_task_json(task_dir, {"worktree_path": None})
     print(f"✔ Worktree removed for task '{task_id}'.")
     return 0
 

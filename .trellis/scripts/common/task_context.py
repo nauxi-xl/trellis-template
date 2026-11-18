@@ -154,15 +154,8 @@ def curated_entry_count(jsonl_file: Path) -> int | None:
     return count
 
 
-def cmd_validate(args: argparse.Namespace) -> int:
-    """Validate JSONL context files."""
-    repo_root = get_repo_root()
-    target_dir = resolve_task_dir(args.dir, repo_root)
-
-    if target_dir is None or not target_dir.is_dir():
-        print(colored("Error: task directory required", Colors.RED))
-        return 1
-
+def _validate_task_dir(target_dir: Path, repo_root: Path) -> int:
+    """Validate JSONL context files for a single task directory and return error count."""
     print(colored("=== Validating Context Files ===", Colors.BLUE))
     print(f"Target dir: {target_dir}")
     print()
@@ -190,6 +183,45 @@ def cmd_validate(args: argparse.Namespace) -> int:
         total_errors += errors
 
     print()
+    return total_errors
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    """Validate JSONL context files for a task directory or all active tasks."""
+    repo_root = get_repo_root()
+    task_arg = getattr(args, "dir", None)
+
+    if not task_arg:
+        tasks_root = repo_root / DIR_WORKFLOW / DIR_TASKS
+        active_dirs = (
+            sorted(
+                (
+                    d
+                    for d in tasks_root.iterdir()
+                    if d.is_dir() and d.name != DIR_ARCHIVE and (d / FILE_TASK_JSON).is_file()
+                ),
+                key=lambda p: p.name,
+            )
+            if tasks_root.is_dir()
+            else []
+        )
+        if not active_dirs:
+            print(colored("✓ No active tasks to validate", Colors.GREEN))
+            return 0
+
+        total_errors = sum(_validate_task_dir(d, repo_root) for d in active_dirs)
+        if total_errors == 0:
+            print(colored(f"✓ All validations passed ({len(active_dirs)} active task(s))", Colors.GREEN))
+            return 0
+        print(colored(f"✗ Validation failed ({total_errors} errors)", Colors.RED))
+        return 1
+
+    target_dir = resolve_task_dir(task_arg, repo_root)
+    if target_dir is None or not target_dir.is_dir():
+        print(colored("Error: task directory required", Colors.RED))
+        return 1
+
+    total_errors = _validate_task_dir(target_dir, repo_root)
     if total_errors == 0:
         print(colored("✓ All validations passed", Colors.GREEN))
         return 0

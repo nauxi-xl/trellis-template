@@ -34,17 +34,12 @@ Managed by Trellis. Edits outside this block are preserved; edits inside may be 
 
 # Multi-Agent & Platform Entry Points
 
-This template is configured to be universal and work out-of-the-box with all major coding agents:
+This template is configured to work out-of-the-box with the primary supported coding agents:
 
-- **Universal Standard**: [AGENTS.md](AGENTS.md) (canonical master instruction file for Antigravity, OpenAI Codex, Amp, Aider, Cline, Roo Code).
+- **Universal Standard**: [AGENTS.md](AGENTS.md) (canonical master instruction file).
 - **Google Antigravity**: Uses `.agents/` with unified skills, rules, workflows, and lifecycle hooks (`.agent` is symlinked to `.agents` for zero-friction backwards compatibility).
-- **Claude Code**: Native configuration in `.claude/` (`settings.json`, `commands/`, `agents/`, `hooks/`, `skills/`) with root fallback [CLAUDE.md](CLAUDE.md).
-- **Cursor IDE**: Native configuration in `.cursor/` (`rules/`, `commands/`, `skills/`, `hooks.json`) with root fallback [.cursorrules](.cursorrules).
-- **OpenAI Codex**: Native configuration in `.codex/` (`config.toml`, `hooks.json`, `agents/`) consuming shared `.agents/skills/`.
-- **GitHub Copilot**: Native configuration in `.github/` (`copilot-instructions.md`, `skills/`, `agents/`, `prompts/`).
-- **Gemini CLI**: Native configuration in `.gemini/` (`settings.json`, `commands/`, `agents/`) with root fallback [GEMINI.md](GEMINI.md).
-- **Windsurf / Devin**: Native configuration in `.devin/` with root fallback [.windsurfrules](.windsurfrules).
-- **Other Supported Agents**: `.opencode/`, `.kiro/`, `.trae/`, `.qoder/`, `.codebuddy/`, `.pi/`, `.kimi-code/`, `.grok/`.
+- **Claude Code**: Native configuration in `.claude/` (`settings.json`, `commands/`, `agents/`, `hooks/`, `skills/` symlinked to `.agents/skills`) with root fallback [CLAUDE.md](CLAUDE.md).
+- **GitHub Copilot**: Native configuration in `.github/` (`copilot-instructions.md`, `skills/` symlinked to `.agents/skills`, `agents/`, `prompts/`, `copilot/hooks/`).
 
 # Required Tools
 
