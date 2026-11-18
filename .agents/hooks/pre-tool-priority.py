@@ -242,20 +242,25 @@ def _classify_fallback_tool(name: str, args: dict[str, Any]) -> tuple[str | None
     return None, False
 
 
-def _emit_decision(decision: str, reason: str | None = None) -> int:
-    payload: dict[str, Any] = {
-        "decision": decision,
-        "permissionDecision": decision,
-    }
-    if reason:
-        payload["reason"] = reason
-        payload["permissionDecisionReason"] = reason
-        payload["hookSpecificOutput"] = {
-            "hookEventName": "PreToolUse",
+def _emit_decision(decision: str, reason: str | None = None, *, is_agy: bool = True) -> int:
+    if is_agy:
+        payload: dict[str, Any] = {"decision": decision}
+        if reason:
+            payload["reason"] = reason
+    else:
+        payload = {
+            "decision": decision,
             "permissionDecision": decision,
-            "permissionDecisionReason": reason,
-            "additionalContext": reason,
         }
+        if reason:
+            payload["reason"] = reason
+            payload["permissionDecisionReason"] = reason
+            payload["hookSpecificOutput"] = {
+                "hookEventName": "PreToolUse",
+                "permissionDecision": decision,
+                "permissionDecisionReason": reason,
+                "additionalContext": reason,
+            }
     print(json.dumps(payload, ensure_ascii=False))
     return 0
 
@@ -265,18 +270,19 @@ def main() -> int:
         return _emit_decision("allow")
 
     data = _load_hook_input()
+    is_agy = "tool_name" not in data and "toolName" not in data
     cwd = Path(data.get("cwd") or os.getcwd())
-    root = find_trellis_root(cwd)
+    root = find_trellis_root(cwd) or find_trellis_root(Path(__file__).resolve())
     if root is None:
-        return _emit_decision("allow")
+        return _emit_decision("allow", is_agy=is_agy)
 
     cfg = _read_tool_priority_config(root)
     if not cfg.get("enabled", True):
-        return _emit_decision("allow")
+        return _emit_decision("allow", is_agy=is_agy)
 
     tool_name, tool_args = _extract_tool_call(data)
     if not tool_name:
-        return _emit_decision("allow")
+        return _emit_decision("allow", is_agy=is_agy)
 
     state_path = _state_file_path(root)
     state = _load_state(state_path)
@@ -294,38 +300,38 @@ def main() -> int:
     if _is_agent_lsp_call(tool_name, tool_args):
         session_state["lsp_used"] = True
         _save_state(state_path, state)
-        return _emit_decision("allow")
+        return _emit_decision("allow", is_agy=is_agy)
 
     if _is_context7_call(tool_name, tool_args):
         session_state["context7_used"] = True
         _save_state(state_path, state)
-        return _emit_decision("allow")
+        return _emit_decision("allow", is_agy=is_agy)
 
     category, enforceable = _classify_fallback_tool(tool_name, tool_args)
     if category is None:
-        return _emit_decision("allow")
+        return _emit_decision("allow", is_agy=is_agy)
 
     mode = cfg.get("mode", "advisory")
 
     if category == "lsp" and cfg.get("prefer_lsp", True):
         if session_state.get("lsp_used"):
-            return _emit_decision("allow")
+            return _emit_decision("allow", is_agy=is_agy)
         if mode == "enforce" and enforceable and not session_state.get("lsp_nudged"):
             session_state["lsp_nudged"] = True
             _save_state(state_path, state)
-            return _emit_decision("deny", LSP_PRIORITY_MSG)
-        return _emit_decision("allow", LSP_PRIORITY_MSG)
+            return _emit_decision("deny", LSP_PRIORITY_MSG, is_agy=is_agy)
+        return _emit_decision("allow", LSP_PRIORITY_MSG, is_agy=is_agy)
 
     if category == "context7" and cfg.get("prefer_context7", True):
         if session_state.get("context7_used"):
-            return _emit_decision("allow")
+            return _emit_decision("allow", is_agy=is_agy)
         if mode == "enforce" and enforceable and not session_state.get("context7_nudged"):
             session_state["context7_nudged"] = True
             _save_state(state_path, state)
-            return _emit_decision("deny", CONTEXT7_PRIORITY_MSG)
-        return _emit_decision("allow", CONTEXT7_PRIORITY_MSG)
+            return _emit_decision("deny", CONTEXT7_PRIORITY_MSG, is_agy=is_agy)
+        return _emit_decision("allow", CONTEXT7_PRIORITY_MSG, is_agy=is_agy)
 
-    return _emit_decision("allow")
+    return _emit_decision("allow", is_agy=is_agy)
 
 
 if __name__ == "__main__":

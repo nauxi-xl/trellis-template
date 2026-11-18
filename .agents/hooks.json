@@ -3,14 +3,14 @@
     "SessionStart": [
       {
         "type": "command",
-        "command": "python3 .agents/hooks/session-start.py",
+        "command": "sh -c 'if [ -f hooks/session-start.py ]; then exec python3 hooks/session-start.py; else exec python3 .agents/hooks/session-start.py; fi'",
         "timeout": 30
       }
     ],
     "PreInvocation": [
       {
         "type": "command",
-        "command": "python3 .agents/hooks/inject-workflow-state.py",
+        "command": "sh -c 'if [ -f hooks/inject-workflow-state.py ]; then exec python3 hooks/inject-workflow-state.py; else exec python3 .agents/hooks/inject-workflow-state.py; fi'",
         "timeout": 30
       }
     ],
@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .agents/hooks/pre-tool-priority.py",
+            "command": "sh -c 'if [ -f hooks/pre-tool-priority.py ]; then exec python3 hooks/pre-tool-priority.py; else exec python3 .agents/hooks/pre-tool-priority.py; fi'",
             "timeout": 10
           }
         ]
@@ -29,7 +29,7 @@
     "Stop": [
       {
         "type": "command",
-        "command": "python3 .agents/hooks/session-end.py",
+        "command": "sh -c 'if [ -f hooks/session-end.py ]; then exec python3 hooks/session-end.py; else exec python3 .agents/hooks/session-end.py; fi'",
         "timeout": 30
       }
     ]

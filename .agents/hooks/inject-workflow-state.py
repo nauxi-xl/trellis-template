@@ -225,7 +225,7 @@ def main() -> int:
     cwd_str = data.get("cwd") or os.getcwd()
     cwd = Path(cwd_str)
 
-    root = find_trellis_root(cwd)
+    root = find_trellis_root(cwd) or find_trellis_root(Path(__file__).resolve())
     if root is None:
         print(json.dumps({"injectSteps": []}))
         return 0
