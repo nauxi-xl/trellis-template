@@ -197,4 +197,6 @@ framework_update:
   remote: "origin"
   branch: "main"
   auto_backup: true
+  check_on_session_start: true
+  session_start_timeout: 5
 

@@ -271,3 +271,4 @@ python3 .trellis/scripts/update_framework.py --force
 # Khôi phục lại bản sao lưu gần nhất trong .trellis/.backup-*:
 python3 .trellis/scripts/update_framework.py --rollback
 ```
+> Khi bắt đầu phiên làm việc (`SessionStart`), hook tự động chạy `update_framework.py --session-start-prompt` để kiểm tra xem framework hiện tại có cũ hơn remote hay không; nếu có bản mới, trợ lý AI sẽ thông báo và hỏi bạn có muốn cập nhật trước khi bắt đầu công việc hay không (tắt kiểm tra tự động bằng `check_on_session_start: false` trong `.trellis/config.yaml` hoặc `TRELLIS_CHECK_REMOTE_ON_START=0`).

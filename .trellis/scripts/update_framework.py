@@ -110,15 +110,23 @@ _MANIFEST_NAME = ".backup-manifest.json"
 _HASHES_REL_PATH = ".trellis/.template-hashes.json"
 
 
-def _run_git(args: List[str], cwd: Path) -> Tuple[int, bytes, str]:
+def _run_git(
+    args: List[str],
+    cwd: Path,
+    timeout: Optional[float] = None,
+) -> Tuple[int, bytes, str]:
     """Execute a git command returning `(returncode, stdout_bytes, stderr_text)`."""
-    res = subprocess.run(
-        ["git"] + args,
-        cwd=str(cwd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    return res.returncode, res.stdout, res.stderr.decode("utf-8", errors="replace").strip()
+    try:
+        res = subprocess.run(
+            ["git"] + args,
+            cwd=str(cwd),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+        )
+        return res.returncode, res.stdout, res.stderr.decode("utf-8", errors="replace").strip()
+    except subprocess.TimeoutExpired:
+        return 1, b"", f"git command timed out after {timeout}s"
 
 
 def _sha256_bytes(data: bytes) -> str:
@@ -159,6 +167,10 @@ def is_managed_path(rel_path: str) -> bool:
 
 
 def _resolve_default_remote(root: Path, config: dict[str, Any]) -> str:
+    env_remote = os.environ.get("TRELLIS_UPDATE_REMOTE", "").strip()
+    if env_remote:
+        return env_remote
+
     fu_cfg = config.get("framework_update")
     if isinstance(fu_cfg, dict):
         cfg_remote = fu_cfg.get("remote")
@@ -178,6 +190,10 @@ def _resolve_default_remote(root: Path, config: dict[str, Any]) -> str:
 
 
 def _resolve_default_branch(config: dict[str, Any]) -> str:
+    env_branch = os.environ.get("TRELLIS_UPDATE_BRANCH", "").strip()
+    if env_branch:
+        return env_branch
+
     fu_cfg = config.get("framework_update")
     if isinstance(fu_cfg, dict):
         cfg_branch = fu_cfg.get("branch")
@@ -409,9 +425,10 @@ def run_framework_update(
     check_only: bool = False,
     dry_run: bool = False,
     force: bool = False,
+    fetch_timeout: Optional[float] = None,
 ) -> dict[str, Any]:
     """Fetch remote branch and inspect or apply managed framework updates."""
-    rc, _, err = _run_git(["fetch", remote, branch], root)
+    rc, _, err = _run_git(["fetch", remote, branch], root, timeout=fetch_timeout)
     if rc != 0:
         raise RuntimeError(f"Failed to fetch '{branch}' from '{remote}': {err}")
 
@@ -531,6 +548,72 @@ def run_framework_update(
     }
 
 
+def build_session_start_update_prompt(root: Path, timeout: float = 5.0) -> str:
+    """Return a `<framework-update-available>` prompt block if remote has updates."""
+    if os.environ.get("TRELLIS_CHECK_REMOTE_ON_START") == "0":
+        return ""
+
+    config = read_trellis_config(root)
+    fu_cfg = config.get("framework_update")
+    if isinstance(fu_cfg, dict):
+        if fu_cfg.get("check_on_session_start") is False:
+            return ""
+        cfg_timeout = fu_cfg.get("session_start_timeout")
+        if isinstance(cfg_timeout, (int, float)) and cfg_timeout > 0:
+            timeout = float(cfg_timeout)
+
+    remote = _resolve_default_remote(root, config)
+    branch = _resolve_default_branch(config)
+
+    try:
+        summary = run_framework_update(
+            root,
+            remote,
+            branch,
+            check_only=True,
+            fetch_timeout=timeout,
+        )
+    except Exception:
+        return ""
+
+    if summary.get("status") != "updates_available":
+        return ""
+
+    added = list(summary.get("added") or [])
+    updated = list(summary.get("updated") or [])
+    added_count = len(added)
+    updated_count = len(updated)
+    total = added_count + updated_count
+    changed = added + updated
+    preview_items = changed[:5]
+    preview = ", ".join(preview_items)
+    if len(changed) > 5:
+        preview += f" (+{len(changed) - 5} more)"
+
+    remote_commit = summary.get("remote_commit") or "unknown"
+    version_note = ""
+    rc_ver, ver_bytes, _ = _run_git(["show", "FETCH_HEAD:.trellis/.version"], root, timeout=2.0)
+    if rc_ver == 0:
+        remote_ver = ver_bytes.decode("utf-8", errors="replace").strip()
+        local_ver_path = root / ".trellis" / ".version"
+        local_ver = local_ver_path.read_text(encoding="utf-8").strip() if local_ver_path.is_file() else ""
+        if remote_ver and local_ver and remote_ver != local_ver:
+            version_note = f" [version {local_ver} -> {remote_ver}]"
+        elif remote_ver:
+            version_note = f" [version {remote_ver}]"
+
+    return (
+        "<framework-update-available>\n"
+        f"⚠️ FRAMEWORK UPDATE AVAILABLE ({remote}/{branch} @ {remote_commit}){version_note}: "
+        f"{total} file(s) behind remote ({added_count} added, {updated_count} updated: {preview}).\n"
+        "ACTION REQUIRED BEFORE STARTING WORK:\n"
+        f"Before executing the user's task, inform the user that a newer version of the framework is available on `{remote}/{branch}` "
+        f"and ask if they would like to update now (by running `python3 .trellis/scripts/update_framework.py --remote {remote} --branch {branch}`) "
+        "or continue working with the current version.\n"
+        "</framework-update-available>"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Update Trellis framework files from a remote Git repository.")
     parser.add_argument("--remote", "-r", help="Remote name (origin, upstream, template) or Git URL")
@@ -540,11 +623,18 @@ def main() -> int:
     parser.add_argument("--force", "-f", action="store_true", help="Overwrite locally modified framework files (after backup)")
     parser.add_argument("--rollback", action="store_true", help="Restore files from the most recent .trellis/.backup-* directory")
     parser.add_argument("--skip-verify", action="store_true", help="Skip running verify.py after applying updates")
+    parser.add_argument("--session-start-prompt", action="store_true", help="Emit <framework-update-available> block if remote updates exist")
     parser.add_argument("--json", action="store_true", help="Output machine-readable JSON")
     args = parser.parse_args()
 
     root = find_repo_root()
     config = read_trellis_config(root)
+
+    if args.session_start_prompt:
+        prompt_block = build_session_start_update_prompt(root)
+        if prompt_block:
+            print(prompt_block)
+        return 0
 
     if args.rollback:
         ok, backup_name, restored = rollback_latest_backup(root)

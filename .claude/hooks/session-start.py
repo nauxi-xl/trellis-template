@@ -349,6 +349,31 @@ def _resolve_update_hint(trellis_dir: Path, context_key: str | None) -> str | No
         return None  # Optional reminder; keep session-start non-fatal.
 
 
+def _resolve_remote_framework_update_prompt(trellis_dir: Path) -> str:
+    """Check remote framework repo for updates with a short bounded timeout."""
+    project_root = trellis_dir.parent
+    updater = trellis_dir / "scripts" / "update_framework.py"
+    if not updater.is_file():
+        updater = Path(__file__).resolve().parent.parent.parent / ".trellis" / "scripts" / "update_framework.py"
+    if not updater.is_file():
+        return ""
+    try:
+        res = subprocess.run(
+            [sys.executable, str(updater), "--session-start-prompt"],
+            cwd=str(project_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=7,
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            return res.stdout.strip()
+    except Exception:
+        pass
+    return ""
+
+
 def _resolve_active_task(trellis_dir: Path, input_data: dict):
     scripts_dir = trellis_dir / "scripts"
     if str(scripts_dir) not in sys.path:
@@ -874,6 +899,10 @@ Trellis compact SessionStart context. Use it to orient the session; load details
 """)
     output.write(_build_first_reply_notice(_resolve_update_hint(trellis_dir, context_key)))
     output.write("\n\n")
+
+    remote_update_prompt = _resolve_remote_framework_update_prompt(trellis_dir)
+    if remote_update_prompt:
+        output.write(f"{remote_update_prompt}\n\n")
 
     # Legacy migration warning
     legacy_warning = _check_legacy_spec(trellis_dir, is_mono, packages)

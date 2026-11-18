@@ -471,6 +471,31 @@ def _build_workflow_toc(workflow_path: Path) -> str:
     return "\n".join(out_lines).rstrip()
 
 
+def _resolve_remote_framework_update_prompt(trellis_dir: Path) -> str:
+    """Check remote framework repo for updates with a short bounded timeout."""
+    project_root = trellis_dir.parent
+    updater = trellis_dir / "scripts" / "update_framework.py"
+    if not updater.is_file():
+        updater = Path(__file__).resolve().parent.parent.parent.parent / ".trellis" / "scripts" / "update_framework.py"
+    if not updater.is_file():
+        return ""
+    try:
+        res = subprocess.run(
+            [sys.executable, str(updater), "--session-start-prompt"],
+            cwd=str(project_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=7,
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            return res.stdout.strip()
+    except Exception:
+        pass
+    return ""
+
+
 def main() -> None:
     if should_skip_injection():
         sys.exit(0)
@@ -497,6 +522,10 @@ Trellis compact SessionStart context. Use it to orient the session; load details
 </session-context>
 
 """)
+
+    remote_update_prompt = _resolve_remote_framework_update_prompt(trellis_dir)
+    if remote_update_prompt:
+        output.write(f"{remote_update_prompt}\n\n")
 
     output.write("<current-state>\n")
     output.write(_build_compact_current_state(trellis_dir, hook_input, spec_index_paths))
