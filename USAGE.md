@@ -252,3 +252,22 @@ Mọi commit và PR đều được thẩm định tự động qua:
 - [ci.yml](file://.github/workflows/ci.yml): Kiểm tra ma trận kiểm thử, `verify.py` và Trellis task.
 - [pr-verify.yml](file://.github/workflows/pr-verify.yml): Chặn PR từ nhánh `main` và kiểm soát tính toàn vẹn của nhánh cách ly.
 - [nightly-health.yml](file://.github/workflows/nightly-health.yml): Định kỳ kiểm tra toolchain.
+
+### F. Cập Nhật Framework Từ Remote (`update_framework.py`)
+Kiểm tra và đồng bộ phiên bản mới của framework từ remote Git (giữ nguyên `.trellis/tasks/`, `.trellis/workspace/`, `.trellis/config.yaml` và các file tùy biến cục bộ):
+```bash
+# Kiểm tra xem có bản cập nhật mới hay không:
+python3 .trellis/scripts/update_framework.py --check
+
+# Xem trước danh sách file sẽ thêm/cập nhật/bỏ qua:
+python3 .trellis/scripts/update_framework.py --dry-run
+
+# Cập nhật từ remote tùy chỉnh (hoặc URL Git):
+python3 .trellis/scripts/update_framework.py --remote upstream --branch main
+
+# Ghi đè cả file framework đã chỉnh sửa cục bộ (vẫn tự động sao lưu trước):
+python3 .trellis/scripts/update_framework.py --force
+
+# Khôi phục lại bản sao lưu gần nhất trong .trellis/.backup-*:
+python3 .trellis/scripts/update_framework.py --rollback
+```

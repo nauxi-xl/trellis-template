@@ -186,3 +186,15 @@ tool_priority:
   prefer_lsp: true
   prefer_context7: true
 
+#-------------------------------------------------------------------------------
+# Remote Framework Updater
+#-------------------------------------------------------------------------------
+# Default remote and branch used by `.trellis/scripts/update_framework.py`.
+# Projects cloned/forked from trellis-template can point `remote` to `upstream`
+# or a custom template URL.
+#
+framework_update:
+  remote: "origin"
+  branch: "main"
+  auto_backup: true
+

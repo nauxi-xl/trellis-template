@@ -314,6 +314,143 @@ class TestFrameworkCLIAndHooks(unittest.TestCase):
             self.assertEqual(allowed_grep.get("decision"), "allow")
             self.assertNotIn("reason", allowed_grep)
 
+    def test_update_framework_check_apply_preserve_and_rollback(self) -> None:
+        updater = SCRIPTS_DIR / "update_framework.py"
+
+        def git(cwd: Path, *args: str) -> str:
+            res = subprocess.run(
+                ["git", *args],
+                cwd=str(cwd),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return res.stdout.strip()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            upstream = tmp_path / "upstream"
+            project = tmp_path / "project"
+            upstream.mkdir()
+
+            git(upstream, "init", "-b", "main")
+            git(upstream, "config", "user.name", "Test")
+            git(upstream, "config", "user.email", "test@example.com")
+
+            (upstream / ".trellis" / "spec" / "guides").mkdir(parents=True)
+            (upstream / ".trellis" / "tasks" / "11-18-local").mkdir(parents=True)
+            (upstream / ".trellis" / ".version").write_text("0.6.17\n", encoding="utf-8")
+            (upstream / ".trellis" / "spec" / "guides" / "index.md").write_text("# Guides v1\n", encoding="utf-8")
+            (upstream / ".trellis" / "tasks" / "11-18-local" / "task.json").write_text('{"id": "upstream"}', encoding="utf-8")
+            git(upstream, "add", "-A")
+            git(upstream, "commit", "-m", "initial")
+
+            subprocess.run(
+                ["git", "clone", "-b", "main", str(upstream), str(project)],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            (project / ".trellis" / "tasks" / "11-18-local" / "task.json").write_text(
+                '{"id": "my-project-task"}', encoding="utf-8"
+            )
+
+            # Upstream publishes v2 managed files + touches protected tasks dir
+            (upstream / ".trellis" / ".version").write_text("0.7.0\n", encoding="utf-8")
+            (upstream / ".trellis" / "spec" / "guides" / "index.md").write_text("# Guides v2\n", encoding="utf-8")
+            (upstream / ".trellis" / "tasks" / "11-18-local" / "task.json").write_text(
+                '{"id": "upstream-overwrite-attempt"}', encoding="utf-8"
+            )
+            git(upstream, "add", "-A")
+            git(upstream, "commit", "-m", "v2")
+
+            dry_res = subprocess.run(
+                [sys.executable, str(updater), "--remote", str(upstream), "--branch", "main", "--dry-run", "--json"],
+                cwd=str(project),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            dry_json = json.loads(dry_res.stdout)
+            self.assertEqual(dry_json["status"], "updates_available")
+            self.assertIn(".trellis/spec/guides/index.md", dry_json["updated"])
+            self.assertIn(".trellis/.version", dry_json["updated"])
+            self.assertNotIn(".trellis/tasks/11-18-local/task.json", dry_json["updated"])
+            self.assertEqual(
+                (project / ".trellis" / "spec" / "guides" / "index.md").read_text(encoding="utf-8"),
+                "# Guides v1\n",
+            )
+
+            apply_res = subprocess.run(
+                [sys.executable, str(updater), "--remote", str(upstream), "--branch", "main", "--skip-verify", "--json"],
+                cwd=str(project),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            apply_json = json.loads(apply_res.stdout)
+            self.assertEqual(apply_json["status"], "updated")
+            self.assertTrue(apply_json["backup_dir"])
+            self.assertTrue((project / apply_json["backup_dir"]).is_dir())
+            self.assertEqual(
+                (project / ".trellis" / "spec" / "guides" / "index.md").read_text(encoding="utf-8"),
+                "# Guides v2\n",
+            )
+            self.assertEqual((project / ".trellis" / ".version").read_text(encoding="utf-8"), "0.7.0\n")
+            self.assertEqual(
+                (project / ".trellis" / "tasks" / "11-18-local" / "task.json").read_text(encoding="utf-8"),
+                '{"id": "my-project-task"}',
+            )
+
+            # Local customization is preserved unless --force is passed
+            (project / ".trellis" / "spec" / "guides" / "index.md").write_text("# Guides custom\n", encoding="utf-8")
+            (upstream / ".trellis" / "spec" / "guides" / "index.md").write_text("# Guides v3\n", encoding="utf-8")
+            git(upstream, "add", "-A")
+            git(upstream, "commit", "-m", "v3")
+
+            skip_res = subprocess.run(
+                [sys.executable, str(updater), "--remote", str(upstream), "--branch", "main", "--skip-verify", "--json"],
+                cwd=str(project),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            skip_json = json.loads(skip_res.stdout)
+            self.assertIn(".trellis/spec/guides/index.md", skip_json["skipped_modified"])
+            self.assertEqual(
+                (project / ".trellis" / "spec" / "guides" / "index.md").read_text(encoding="utf-8"),
+                "# Guides custom\n",
+            )
+
+            force_res = subprocess.run(
+                [sys.executable, str(updater), "--remote", str(upstream), "--branch", "main", "--force", "--skip-verify", "--json"],
+                cwd=str(project),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            force_json = json.loads(force_res.stdout)
+            self.assertIn(".trellis/spec/guides/index.md", force_json["updated"])
+            self.assertEqual(
+                (project / ".trellis" / "spec" / "guides" / "index.md").read_text(encoding="utf-8"),
+                "# Guides v3\n",
+            )
+
+            # Rollback restores the custom file backed up before --force
+            rb_res = subprocess.run(
+                [sys.executable, str(updater), "--rollback", "--skip-verify", "--json"],
+                cwd=str(project),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            rb_json = json.loads(rb_res.stdout)
+            self.assertEqual(rb_json["status"], "rolled_back")
+            self.assertEqual(
+                (project / ".trellis" / "spec" / "guides" / "index.md").read_text(encoding="utf-8"),
+                "# Guides custom\n",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
