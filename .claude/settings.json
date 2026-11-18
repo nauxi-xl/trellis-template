@@ -55,6 +55,16 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "matcher": "Grep|Glob|Bash|Edit|Write|MultiEdit|WebSearch|WebFetch|mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/pre-tool-priority.py",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

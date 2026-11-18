@@ -121,16 +121,39 @@ def load_breadcrumbs(root: Path) -> dict[str, str]:
     return result
 
 
+TOOL_PRIORITY_BLOCK = (
+    "<tool-priority>\n"
+    "- Code Intelligence (agent-lsp FIRST): Before using raw grep/find/run_command or editing code symbols, "
+    "prioritize `agent-lsp` MCP (`find_symbol`, `find_references`, `find_callers`, `inspect_symbol`, "
+    "`blast_radius`, `preview_edit`, `safe_apply_edit`, `get_diagnostics`).\n"
+    "- Documentation (Context7 FIRST): Before using `search_web`/`WebSearch` or training data for any library, "
+    "framework, SDK, API, or CLI tool, prioritize `context7` MCP (`resolve-library-id` -> `query-docs`).\n"
+    "</tool-priority>"
+)
+
+
+def _tool_priority_enabled(config: dict) -> bool:
+    """Return True unless `tool_priority.enabled` is explicitly false in config."""
+    if isinstance(config, dict):
+        section = config.get("tool_priority")
+        if isinstance(section, dict) and isinstance(section.get("enabled"), bool):
+            return section["enabled"]
+    return True
+
+
 def build_breadcrumb(
     task_id: str | None,
     status: str,
     templates: dict[str, str],
     source: str | None = None,
+    include_tool_priority: bool = True,
 ) -> str:
     body = templates.get(status)
     if body is None:
         body = "Refer to workflow.md for current step."
     header = f"Status: {status}" if task_id is None else f"Task: {task_id} ({status})"
+    if include_tool_priority:
+        return f"<workflow-state>\n{header}\n{body}\n{TOOL_PRIORITY_BLOCK}\n</workflow-state>"
     return f"<workflow-state>\n{header}\n{body}\n</workflow-state>"
 
 
@@ -212,13 +235,18 @@ def main() -> int:
         print(json.dumps({"injectSteps": []}))
         return 0
 
+    include_priority = _tool_priority_enabled(config)
     templates = load_breadcrumbs(root)
     task = get_active_task(root, data)
     if task is None:
-        breadcrumb = build_breadcrumb(None, "no_task", templates)
+        breadcrumb = build_breadcrumb(
+            None, "no_task", templates, include_tool_priority=include_priority
+        )
     else:
         task_id, status, source = task
-        breadcrumb = build_breadcrumb(task_id, status, templates, source)
+        breadcrumb = build_breadcrumb(
+            task_id, status, templates, source, include_tool_priority=include_priority
+        )
 
     # AGY output contract: injectSteps with systemMessage
     output = {

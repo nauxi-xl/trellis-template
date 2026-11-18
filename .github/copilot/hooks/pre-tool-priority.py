@@ -1,0 +1,1 @@
+../../../.agents/hooks/pre-tool-priority.py

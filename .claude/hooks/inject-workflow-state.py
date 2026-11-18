@@ -356,12 +356,33 @@ def resolve_breadcrumb_key(
     return status
 
 
+TOOL_PRIORITY_BLOCK = (
+    "<tool-priority>\n"
+    "- Code Intelligence (agent-lsp FIRST): Before using raw grep/find/run_command or editing code symbols, "
+    "prioritize `agent-lsp` MCP (`find_symbol`, `find_references`, `find_callers`, `inspect_symbol`, "
+    "`blast_radius`, `preview_edit`, `safe_apply_edit`, `get_diagnostics`).\n"
+    "- Documentation (Context7 FIRST): Before using `search_web`/`WebSearch` or training data for any library, "
+    "framework, SDK, API, or CLI tool, prioritize `context7` MCP (`resolve-library-id` -> `query-docs`).\n"
+    "</tool-priority>"
+)
+
+
+def _tool_priority_enabled(config: dict) -> bool:
+    """Return True unless `tool_priority.enabled` is explicitly false in config."""
+    if isinstance(config, dict):
+        section = config.get("tool_priority")
+        if isinstance(section, dict) and isinstance(section.get("enabled"), bool):
+            return section["enabled"]
+    return True
+
+
 def build_breadcrumb(
     task_id: Optional[str],
     status: str,
     templates: dict[str, str],
     source: str | None = None,
     breadcrumb_key: str | None = None,
+    include_tool_priority: bool = True,
 ) -> str:
     """Build the <workflow-state>...</workflow-state> block.
 
@@ -377,6 +398,8 @@ def build_breadcrumb(
     if body is None:
         body = "Refer to workflow.md for current step."
     header = f"Status: {status}" if task_id is None else f"Task: {task_id} ({status})"
+    if include_tool_priority:
+        return f"<workflow-state>\n{header}\n{body}\n{TOOL_PRIORITY_BLOCK}\n</workflow-state>"
     return f"<workflow-state>\n{header}\n{body}\n</workflow-state>"
 
 
@@ -434,6 +457,7 @@ def main() -> int:
     if prompt_has_skip_keyword(data.get("prompt", ""), _resolve_skip_keyword(config)):
         return 0  # user opted out of the per-turn breadcrumb for this turn
 
+    include_priority = _tool_priority_enabled(config)
     templates = load_breadcrumbs(root)
     platform = _detect_platform(data)
     task = get_active_task(root, data)
@@ -442,14 +466,23 @@ def main() -> int:
         # trellis-brainstorm + task.py create when user describes real work.
         no_task_key = resolve_breadcrumb_key("no_task", platform, config)
         breadcrumb = build_breadcrumb(
-            None, "no_task", templates, breadcrumb_key=no_task_key
+            None,
+            "no_task",
+            templates,
+            breadcrumb_key=no_task_key,
+            include_tool_priority=include_priority,
         )
     else:
         task_id, status, source = task
         status_key = resolve_breadcrumb_key(status, platform, config)
         source_for_breadcrumb = None if platform == "codex" else source
         breadcrumb = build_breadcrumb(
-            task_id, status, templates, source_for_breadcrumb, breadcrumb_key=status_key
+            task_id,
+            status,
+            templates,
+            source_for_breadcrumb,
+            breadcrumb_key=status_key,
+            include_tool_priority=include_priority,
         )
     if platform == "codex":
         parts: list[str] = []

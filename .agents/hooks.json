@@ -14,6 +14,18 @@
         "timeout": 30
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .agents/hooks/pre-tool-priority.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "type": "command",

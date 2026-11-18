@@ -14,6 +14,14 @@
         "powershell": "python3 .github/copilot/hooks/inject-workflow-state.py",
         "timeoutSec": 15
       }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "python3 .github/copilot/hooks/pre-tool-priority.py",
+        "powershell": "python3 .github/copilot/hooks/pre-tool-priority.py",
+        "timeoutSec": 10
+      }
     ]
   }
 }
