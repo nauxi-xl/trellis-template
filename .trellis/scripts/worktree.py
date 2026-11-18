@@ -355,7 +355,9 @@ def cmd_merge(args: argparse.Namespace) -> int:
 
         # Step 2: Verification check if requested
         if not args.skip_verify:
-            verify_script = REPO_ROOT / ".trellis" / "scripts" / "verify.py"
+            verify_script = w_dir / ".trellis" / "scripts" / "verify.py"
+            if not verify_script.is_file():
+                verify_script = REPO_ROOT / ".trellis" / "scripts" / "verify.py"
             if verify_script.is_file():
                 print("▶ Running self-healing verification in worktree before merge...")
                 v_res = subprocess.run([sys.executable, str(verify_script)], cwd=w_dir)

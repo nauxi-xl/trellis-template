@@ -7,8 +7,10 @@
 # Session/window scoped runtime state
 .runtime/
 
-# Ralph Loop state file
+# Ralph Loop / Verification state files
 .ralph-state.json
+.verify_state.json
+**/.verify_state.json
 
 # Agent runtime files
 .agents/
