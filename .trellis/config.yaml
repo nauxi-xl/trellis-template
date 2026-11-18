@@ -171,3 +171,18 @@ channel:
 #   fail_fast: true                    # Stop at the first failing stage (default: false)
 #   max_iterations: 3                  # Bounded self-healing repair attempts before Option A halt (default: 3)
 
+#-------------------------------------------------------------------------------
+# Tool Priority Hook (agent-lsp & Context7 First)
+#-------------------------------------------------------------------------------
+# Controls `.agents/hooks/pre-tool-priority.py` (PreToolUse) and the
+# `<tool-priority>` block in PreInvocation / UserPromptSubmit.
+# - mode: "advisory" (default) allows tool calls and injects priority guidance.
+# - mode: "enforce" blocks the first raw grep/web-search in a session if
+#   agent-lsp / context7 has not been used yet, then allows fallback retries.
+#
+tool_priority:
+  enabled: true
+  mode: "advisory"
+  prefer_lsp: true
+  prefer_context7: true
+

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -155,6 +156,10 @@ class TestFrameworkCLIAndHooks(unittest.TestCase):
         self.assertEqual(res_normal.returncode, 0, msg=res_normal.stderr)
         normal_out = json.loads(res_normal.stdout)
         self.assertTrue(normal_out.get("injectSteps"), msg="Expected non-empty injectSteps")
+        msg_text = normal_out["injectSteps"][0]["systemMessage"]["systemMessage"]
+        self.assertIn("<tool-priority>", msg_text)
+        self.assertIn("agent-lsp", msg_text)
+        self.assertIn("context7", msg_text)
 
         skip_input = json.dumps({"cwd": str(REPO_ROOT), "prompt": "please run no-trellis here"})
         res_skip = subprocess.run(
@@ -175,6 +180,139 @@ class TestFrameworkCLIAndHooks(unittest.TestCase):
             link_path = REPO_ROOT / link_rel
             self.assertTrue(link_path.is_symlink(), msg=f"{link_rel} must be a symlink")
             self.assertEqual(link_path.resolve(), canonical)
+
+    def test_pre_tool_priority_hook_advisory_and_enforce(self) -> None:
+        hook_path = REPO_ROOT / ".agents" / "hooks" / "pre-tool-priority.py"
+        canonical_hook = hook_path.resolve()
+        for link_rel in (
+            ".claude/hooks/pre-tool-priority.py",
+            ".github/copilot/hooks/pre-tool-priority.py",
+        ):
+            link_path = REPO_ROOT / link_rel
+            self.assertTrue(link_path.is_symlink(), msg=f"{link_rel} must be a symlink")
+            self.assertEqual(link_path.resolve(), canonical_hook)
+
+        def run_hook(tmp_root: Path, payload: dict[str, object], mode: str = "advisory") -> dict[str, object]:
+            env = dict(os.environ)
+            env["TRELLIS_TOOL_PRIORITY_MODE"] = mode
+            res = subprocess.run(
+                [sys.executable, str(hook_path)],
+                input=json.dumps({"cwd": str(tmp_root), **payload}),
+                cwd=str(tmp_root),
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(res.returncode, 0, msg=res.stderr)
+            return json.loads(res.stdout)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_root = Path(tmp)
+            (tmp_root / ".trellis").mkdir(parents=True)
+
+            # Advisory mode: grep, code edit, and search_web all allow with guidance
+            grep_out = run_hook(tmp_root, {
+                "conversationId": "adv-1",
+                "toolCall": {"name": "run_command", "args": {"CommandLine": "grep -rn foo src/"}},
+            })
+            self.assertEqual(grep_out.get("decision"), "allow")
+            self.assertIn("[Tool Priority: agent-lsp First]", str(grep_out.get("reason", "")))
+
+            edit_out = run_hook(tmp_root, {
+                "conversationId": "adv-1",
+                "toolCall": {"name": "edit_file", "args": {"Path": "app.py"}},
+            })
+            self.assertEqual(edit_out.get("decision"), "allow")
+            self.assertIn("[Tool Priority: agent-lsp First]", str(edit_out.get("reason", "")))
+
+            web_out = run_hook(tmp_root, {
+                "conversationId": "adv-1",
+                "toolCall": {"name": "search_web", "args": {"query": "nextjs docs"}},
+            })
+            self.assertEqual(web_out.get("decision"), "allow")
+            self.assertIn("[Tool Priority: Context7 First]", str(web_out.get("reason", "")))
+
+            # Enforce mode: first raw web search / grep denied, second allowed (retry safety)
+            deny_web = run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-1",
+                    "toolCall": {"name": "search_web", "args": {"query": "react hooks"}},
+                },
+                mode="enforce",
+            )
+            self.assertEqual(deny_web.get("decision"), "deny")
+            self.assertIn("[Tool Priority: Context7 First]", str(deny_web.get("reason", "")))
+
+            retry_web = run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-1",
+                    "toolCall": {"name": "search_web", "args": {"query": "react hooks"}},
+                },
+                mode="enforce",
+            )
+            self.assertEqual(retry_web.get("decision"), "allow")
+
+            deny_grep = run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-1",
+                    "toolCall": {"name": "run_command", "args": {"CommandLine": "grep -rn foo src/"}},
+                },
+                mode="enforce",
+            )
+            self.assertEqual(deny_grep.get("decision"), "deny")
+            self.assertIn("[Tool Priority: agent-lsp First]", str(deny_grep.get("reason", "")))
+
+            retry_grep = run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-1",
+                    "toolCall": {"name": "run_command", "args": {"CommandLine": "grep -rn foo src/"}},
+                },
+                mode="enforce",
+            )
+            self.assertEqual(retry_grep.get("decision"), "allow")
+
+            # Using Context7 and agent-lsp first allows immediate fallback without denial
+            run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-2",
+                    "toolCall": {"name": "call_mcp_tool", "args": {"ServerName": "context7", "ToolName": "query-docs"}},
+                },
+                mode="enforce",
+            )
+            run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-2",
+                    "toolCall": {"name": "call_mcp_tool", "args": {"ServerName": "agent-lsp", "ToolName": "find_symbol"}},
+                },
+                mode="enforce",
+            )
+            allowed_web = run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-2",
+                    "toolCall": {"name": "search_web", "args": {"query": "react hooks"}},
+                },
+                mode="enforce",
+            )
+            self.assertEqual(allowed_web.get("decision"), "allow")
+            self.assertNotIn("reason", allowed_web)
+
+            allowed_grep = run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-2",
+                    "toolCall": {"name": "run_command", "args": {"CommandLine": "grep -rn foo src/"}},
+                },
+                mode="enforce",
+            )
+            self.assertEqual(allowed_grep.get("decision"), "allow")
+            self.assertNotIn("reason", allowed_grep)
 
 
 if __name__ == "__main__":
