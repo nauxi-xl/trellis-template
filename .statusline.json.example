@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Custom color configuration for Trellis / AGY StatusLine",
+  "theme": "tokyo-night",
+  "colors": {
+    "task_priority": "#7aa2f7",
+    "task_title": "default",
+    "task_status": "#e0af68",
+    "task_source": "#565f89",
+    "separator": "#565f89",
+    "model": "#7dcfff",
+    "ctx_label": "#9aa5ce",
+    "ctx_low": "#9ece6a",
+    "ctx_med": "#e0af68",
+    "ctx_high": "#f7768e",
+    "branch": "bold #bb9af7",
+    "duration": "#9aa5ce",
+    "developer": "#73daca",
+    "task_count": "#b4f9f8",
+    "rate_limit": "#7dcfff",
+    "reset_time": "#565f89"
+  }
+}
