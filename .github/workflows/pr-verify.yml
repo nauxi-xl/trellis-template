@@ -65,4 +65,4 @@ jobs:
 
       - name: Validate Trellis Task Schema
         run: |
-          python3 .trellis/scripts/task.py validate || true
+          python3 .trellis/scripts/task.py validate

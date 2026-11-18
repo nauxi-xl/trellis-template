@@ -675,7 +675,7 @@ def main() -> int:
 
     # validate
     p_validate = subparsers.add_parser("validate", help="Validate context files")
-    p_validate.add_argument("dir", help="Task directory")
+    p_validate.add_argument("dir", nargs="?", help="Task directory (omit to validate all active tasks)")
 
     # list-context
     p_listctx = subparsers.add_parser("list-context", help="List context entries")

@@ -36,8 +36,8 @@
 ## 1. Tổng Quan Kiến Trúc Skill
 
 Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định dạng **Portable Agent Skill Standard**:
-- Thư mục chuẩn: [.agents/skills/](file:///home/nauxi/projects/trellis-template/.agents/skills/) (Google Antigravity, Codex, Amp, Cline).
-- Bản sao tự động: [.claude/skills/](file:///home/nauxi/projects/trellis-template/.claude/skills/) (Claude Code) và [.github/skills/](file:///home/nauxi/projects/trellis-template/.github/skills/) (GitHub Copilot).
+- Thư mục chuẩn: [.agents/skills/](file:///home/nauxi/projects/trellis-template/.agents/skills/) (Google Antigravity và chuẩn dùng chung).
+- Liên kết đồng bộ (symlink): [.claude/skills/](file:///home/nauxi/projects/trellis-template/.claude/skills/) (Claude Code) và [.github/skills/](file:///home/nauxi/projects/trellis-template/.github/skills/) (GitHub Copilot) được trỏ symlink trực tiếp về `../.agents/skills` để đảm bảo không lệch phiên bản.
 - Cấu trúc tệp tiêu chuẩn: Mỗi skill bắt buộc chứa tệp `SKILL.md` với YAML frontmatter (`name`, `description`, `user-invocable`), đi kèm thư mục phụ trợ `scripts/`, `references/` nếu có.
 
 ```

@@ -67,7 +67,7 @@ jobs:
 
       - name: Validate Trellis Tasks & Context Specs
         run: |
-          python3 .trellis/scripts/task.py validate || true
+          python3 .trellis/scripts/task.py validate
 
       - name: Verify Dynamic Context Engine
         run: |

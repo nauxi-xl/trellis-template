@@ -159,6 +159,40 @@ def _load_hook_input() -> dict:
         return {}
 
 
+DEFAULT_PROMPT_INJECTION_SKIP_KEYWORD = "no-trellis"
+
+
+def _read_trellis_config(root: Path) -> dict:
+    """Load .trellis/config.yaml via the bundled trellis_config helper."""
+    scripts_dir = root / ".trellis" / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    try:
+        from common.trellis_config import read_trellis_config  # type: ignore[import-not-found]
+        return read_trellis_config(root)
+    except Exception:
+        return {}
+
+
+def _resolve_skip_keyword(config: dict) -> str:
+    """Read `prompt_injection.skip_keyword` from parsed .trellis/config.yaml."""
+    if isinstance(config, dict):
+        section = config.get("prompt_injection")
+        if isinstance(section, dict):
+            raw = section.get("skip_keyword", DEFAULT_PROMPT_INJECTION_SKIP_KEYWORD)
+            if isinstance(raw, str):
+                return raw
+    return DEFAULT_PROMPT_INJECTION_SKIP_KEYWORD
+
+
+def prompt_has_skip_keyword(prompt: str, keyword: str) -> bool:
+    """Case-insensitive, word-boundary match of `keyword` in `prompt`."""
+    if not keyword or not isinstance(prompt, str):
+        return False
+    pattern = r"(?<![\w-])" + re.escape(keyword) + r"(?![\w-])"
+    return re.search(pattern, prompt, re.IGNORECASE) is not None
+
+
 def main() -> int:
     if os.environ.get("TRELLIS_HOOKS") == "0" or os.environ.get("TRELLIS_DISABLE_HOOKS") == "1":
         print(json.dumps({"injectSteps": []}))
@@ -170,6 +204,11 @@ def main() -> int:
 
     root = find_trellis_root(cwd)
     if root is None:
+        print(json.dumps({"injectSteps": []}))
+        return 0
+
+    config = _read_trellis_config(root)
+    if prompt_has_skip_keyword(data.get("prompt", ""), _resolve_skip_keyword(config)):
         print(json.dumps({"injectSteps": []}))
         return 0
 

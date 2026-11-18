@@ -173,20 +173,36 @@ def detect_verification_stack(root: Path) -> dict[str, Optional[str]]:
     pyproject = root / "pyproject.toml"
     pytest_ini = root / "pytest.ini"
     tests_dir = root / "tests"
-    has_python = pyproject.is_file() or any(root.glob("*.py")) or tests_dir.is_dir()
+    trellis_scripts = root / ".trellis" / "scripts"
+    has_root_py = pyproject.is_file() or any(root.glob("*.py"))
+    has_python = has_root_py or tests_dir.is_dir() or trellis_scripts.is_dir()
 
     if has_python:
-        if not test_cmd and (pytest_ini.is_file() or tests_dir.is_dir() or shutil.which("pytest")):
-            test_cmd = "pytest -q"
-        if not lint_cmd and shutil.which("ruff"):
-            lint_cmd = "ruff check ."
-        elif not lint_cmd and shutil.which("flake8"):
-            lint_cmd = "flake8"
+        if not test_cmd:
+            if (pytest_ini.is_file() or tests_dir.is_dir()) and shutil.which("pytest"):
+                test_cmd = "pytest -q"
+            elif tests_dir.is_dir():
+                test_cmd = f'"{sys.executable}" -m unittest discover -s tests -p "test_*.py"'
 
-        if not typecheck_cmd and shutil.which("mypy"):
-            typecheck_cmd = "mypy ."
-        elif not typecheck_cmd and shutil.which("pyright"):
-            typecheck_cmd = "pyright"
+        if not lint_cmd:
+            if shutil.which("ruff"):
+                lint_cmd = "ruff check ."
+            elif shutil.which("flake8"):
+                lint_cmd = "flake8"
+            elif trellis_scripts.is_dir():
+                lint_cmd = f'"{sys.executable}" -m compileall -q .trellis/scripts .agents/hooks'
+
+        if not typecheck_cmd:
+            if shutil.which("mypy") and has_root_py:
+                typecheck_cmd = "mypy ."
+            elif shutil.which("pyright"):
+                if has_root_py:
+                    typecheck_cmd = "pyright"
+                elif trellis_scripts.is_dir():
+                    targets = ".trellis/scripts .agents/hooks"
+                    if tests_dir.is_dir():
+                        targets += " tests"
+                    typecheck_cmd = f"pyright {targets}"
 
     # 3. Rust
     cargo_toml = root / "Cargo.toml"
