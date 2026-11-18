@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -351,6 +352,11 @@ class TestFrameworkCLIAndHooks(unittest.TestCase):
                 text=True,
                 check=True,
             )
+            shutil.copytree(
+                SCRIPTS_DIR,
+                project / ".trellis" / "scripts",
+                ignore=shutil.ignore_patterns("__pycache__"),
+            )
             (project / ".trellis" / "tasks" / "11-18-local" / "task.json").write_text(
                 '{"id": "my-project-task"}', encoding="utf-8"
             )
@@ -450,6 +456,110 @@ class TestFrameworkCLIAndHooks(unittest.TestCase):
                 (project / ".trellis" / "spec" / "guides" / "index.md").read_text(encoding="utf-8"),
                 "# Guides custom\n",
             )
+
+    def test_session_start_detects_outdated_framework_and_prompts_user(self) -> None:
+        updater = SCRIPTS_DIR / "update_framework.py"
+        agy_session_start = REPO_ROOT / ".agents" / "hooks" / "session-start.py"
+
+        def git(cwd: Path, *args: str) -> str:
+            res = subprocess.run(
+                ["git", *args],
+                cwd=str(cwd),
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return res.stdout.strip()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            upstream = tmp_path / "upstream"
+            project = tmp_path / "project"
+            upstream.mkdir()
+
+            git(upstream, "init", "-b", "main")
+            git(upstream, "config", "user.name", "Test")
+            git(upstream, "config", "user.email", "test@example.com")
+            (upstream / ".trellis").mkdir(parents=True)
+            (upstream / ".trellis" / ".version").write_text("0.6.17\n", encoding="utf-8")
+            (upstream / ".trellis" / "workflow.md").write_text("# Workflow\n", encoding="utf-8")
+            git(upstream, "add", "-A")
+            git(upstream, "commit", "-m", "initial")
+
+            subprocess.run(
+                ["git", "clone", "-b", "main", str(upstream), str(project)],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            shutil.copytree(
+                SCRIPTS_DIR,
+                project / ".trellis" / "scripts",
+                ignore=shutil.ignore_patterns("__pycache__"),
+            )
+
+            env = {
+                k: v for k, v in os.environ.items()
+                if not k.endswith("_PROJECT_DIR")
+            }
+            env["TRELLIS_UPDATE_REMOTE"] = str(upstream)
+            env["TRELLIS_UPDATE_BRANCH"] = "main"
+
+            # Up-to-date: no <framework-update-available> block
+            cli_up_to_date = subprocess.run(
+                [sys.executable, str(updater), "--session-start-prompt"],
+                cwd=str(project),
+                env=env,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            self.assertEqual(cli_up_to_date.stdout.strip(), "")
+
+            hook_up_to_date = subprocess.run(
+                [sys.executable, str(agy_session_start)],
+                input=json.dumps({"cwd": str(project)}),
+                cwd=str(project),
+                env=env,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            hook_up_json = json.loads(hook_up_to_date.stdout)
+            up_msg = hook_up_json["injectSteps"][0]["systemMessage"]["systemMessage"]
+            self.assertNotIn("<framework-update-available>", up_msg)
+
+            # Upstream bumps version -> SessionStart warns and asks user
+            (upstream / ".trellis" / ".version").write_text("0.8.0\n", encoding="utf-8")
+            git(upstream, "add", "-A")
+            git(upstream, "commit", "-m", "bump 0.8.0")
+
+            cli_outdated = subprocess.run(
+                [sys.executable, str(updater), "--session-start-prompt"],
+                cwd=str(project),
+                env=env,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            self.assertIn("<framework-update-available>", cli_outdated.stdout)
+            self.assertIn("0.8.0", cli_outdated.stdout)
+            self.assertIn("1 file(s) behind remote", cli_outdated.stdout)
+
+            hook_outdated = subprocess.run(
+                [sys.executable, str(agy_session_start)],
+                input=json.dumps({"cwd": str(project)}),
+                cwd=str(project),
+                env=env,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            hook_out_json = json.loads(hook_outdated.stdout)
+            out_msg = hook_out_json["injectSteps"][0]["systemMessage"]["systemMessage"]
+            self.assertIn("<framework-update-available>", out_msg)
+            self.assertIn("0.8.0", out_msg)
+            self.assertIn("ask if they would like to update", out_msg)
 
 
 if __name__ == "__main__":

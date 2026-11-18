@@ -24,26 +24,76 @@ def main() -> int:
         pass
 
     repo_root = Path(__file__).resolve().parent.parent.parent
+    target_root = repo_root
+    if raw_input.strip():
+        try:
+            parsed_in = json.loads(raw_input)
+            if isinstance(parsed_in, dict) and parsed_in.get("cwd"):
+                cand = Path(str(parsed_in["cwd"])).resolve()
+                if (cand / ".trellis").is_dir():
+                    target_root = cand
+        except Exception:
+            pass
+
     canonical_hook = repo_root / ".claude" / "hooks" / "session-start.py"
 
+    def _fallback_remote_update_prompt() -> str:
+        updater = target_root / ".trellis" / "scripts" / "update_framework.py"
+        if not updater.is_file():
+            updater = repo_root / ".trellis" / "scripts" / "update_framework.py"
+        if not updater.is_file():
+            return ""
+        try:
+            u_res = subprocess.run(
+                [sys.executable, str(updater), "--session-start-prompt"],
+                cwd=str(target_root),
+                capture_output=True,
+                text=True,
+                timeout=7,
+            )
+            if u_res.returncode == 0 and u_res.stdout.strip():
+                return u_res.stdout.strip()
+        except Exception:
+            pass
+        return ""
+
     if not canonical_hook.is_file():
-        print(json.dumps({"injectSteps": []}))
+        fb_prompt = _fallback_remote_update_prompt()
+        out_steps = (
+            [{"systemMessage": {"systemMessage": fb_prompt}}]
+            if fb_prompt
+            else []
+        )
+        print(json.dumps({"injectSteps": out_steps}, ensure_ascii=False))
         return 0
 
     try:
         res = subprocess.run(
             [sys.executable, str(canonical_hook)],
             input=raw_input,
+            cwd=str(target_root),
             text=True,
             capture_output=True,
-            timeout=15,
+            timeout=20,
         )
     except Exception:
-        print(json.dumps({"injectSteps": []}))
+        fb_prompt = _fallback_remote_update_prompt()
+        out_steps = (
+            [{"systemMessage": {"systemMessage": fb_prompt}}]
+            if fb_prompt
+            else []
+        )
+        print(json.dumps({"injectSteps": out_steps}, ensure_ascii=False))
         return 0
 
     if res.returncode != 0:
-        print(json.dumps({"injectSteps": []}))
+        fb_prompt = _fallback_remote_update_prompt()
+        out_steps = (
+            [{"systemMessage": {"systemMessage": fb_prompt}}]
+            if fb_prompt
+            else []
+        )
+        print(json.dumps({"injectSteps": out_steps}, ensure_ascii=False))
         return 0
 
     try:
@@ -54,13 +104,20 @@ def main() -> int:
             or ""
         )
 
-        dynamic_script = repo_root / ".trellis" / "scripts" / "dynamic_context.py"
+        if "<framework-update-available>" not in context_text and not context_text:
+            fb_prompt = _fallback_remote_update_prompt()
+            if fb_prompt:
+                context_text = fb_prompt
+
+        dynamic_script = target_root / ".trellis" / "scripts" / "dynamic_context.py"
+        if not dynamic_script.is_file():
+            dynamic_script = repo_root / ".trellis" / "scripts" / "dynamic_context.py"
         dynamic_block = ""
         if dynamic_script.is_file():
             try:
                 d_res = subprocess.run(
                     [sys.executable, str(dynamic_script), "--format", "prompt"],
-                    cwd=str(repo_root),
+                    cwd=str(target_root),
                     capture_output=True,
                     text=True,
                     timeout=5,
