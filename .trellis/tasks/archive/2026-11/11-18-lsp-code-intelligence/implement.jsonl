@@ -1,0 +1,5 @@
+{"step": "agent_lsp_install", "status": "completed"}
+{"step": "mcp_configuration", "status": "completed"}
+{"step": "rules_and_skills", "status": "completed"}
+{"step": "spec_guide_and_agents_md", "status": "completed"}
+{"step": "verify_script_integration", "status": "completed"}

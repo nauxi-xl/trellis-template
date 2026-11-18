@@ -36,9 +36,28 @@ cat .trellis/spec/<package>/<layer>/index.md
 
 Read the specific guideline files referenced — the index is a pointer, not the goal.
 
-## Step 3: Run Project Checks
+## Step 3: Run Project Checks (Autonomous Self-Correction Loop)
 
-Run the project's lint, type-check, and test commands. Fix any failures before proceeding.
+Execute the Trellis verification runner to run the project's typecheck, lint, and test suites:
+
+```bash
+python3 ./.trellis/scripts/verify.py
+```
+
+### Self-Healing Protocol
+1. **If All Checks Pass**:
+   - The runner prints `✓ All verification stages passed successfully.` Proceed directly to Step 4.
+2. **If Failures Occur (Iteration 1–2)**:
+   - The runner outputs a structured `<self-healing-feedback>` diagnostic envelope detailing exact failure sites (file, line, error code, assertion failure).
+   - **Do not stop or ask the user to fix this**.
+   - Correlate the failing lines with recent changes (`git diff`).
+   - Apply a minimal, targeted patch to resolve the defect.
+   - Re-run `python3 ./.trellis/scripts/verify.py`.
+3. **If Exhausted (Iteration 3 Reached — Option A Policy)**:
+   - When the maximum retry limit (3 iterations) is reached, execution halts to protect against runaway loops.
+   - **Do not revert or wipe uncommitted changes**.
+   - Output the persistent failure trace and root-cause hypothesis, and ask the user for guidance before continuing.
+
 
 ## Step 4: Review Against Checklist
 

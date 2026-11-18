@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Cross-layer contract consistency"}
+{"file": ".trellis/spec/guides/git-worktrees.md", "reason": "Git worktree lifecycle guide"}
+{"file": ".trellis/spec/guides/dynamic-context.md", "reason": "Dynamic context engine guide"}
+{"file": ".trellis/spec/guides/cicd-pipeline.md", "reason": "CI/CD pipeline specification"}

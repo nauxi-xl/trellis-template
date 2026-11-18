@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Code reuse and standard library utilities"}
+{"file": ".trellis/spec/guides/git-worktrees.md", "reason": "Git worktree verification"}
+{"file": ".trellis/spec/guides/dynamic-context.md", "reason": "Dynamic context validation"}
+{"file": ".trellis/spec/guides/cicd-pipeline.md", "reason": "CI/CD workflow validation"}

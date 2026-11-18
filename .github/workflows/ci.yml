@@ -1,0 +1,74 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify Codebase & Trellis Specs
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+        node-version: ["20.x"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install agent-lsp
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          curl -fsSL https://raw.githubusercontent.com/blackwell-systems/agent-lsp/main/install.sh | INSTALL_DIR="$HOME/.local/bin" sh || true
+          if [ ! -f "$HOME/.local/bin/agent-lsp" ]; then
+            curl -fsSL "https://github.com/blackwell-systems/agent-lsp/releases/download/v0.24.2/agent-lsp_linux_amd64.tar.gz" | tar -xz -C "$HOME/.local/bin" agent-lsp && chmod +x "$HOME/.local/bin/agent-lsp"
+          fi
+
+      - name: Install Language Servers
+        run: |
+          uv tool install pyright || true
+          npm install -g typescript-language-server typescript || true
+
+      - name: Check agent-lsp doctor
+        run: |
+          agent-lsp doctor || true
+
+      - name: Execute Trellis Self-Healing Verification Runner
+        run: |
+          python3 .trellis/scripts/verify.py --stage all --format text
+
+      - name: Validate Trellis Tasks & Context Specs
+        run: |
+          python3 .trellis/scripts/task.py validate || true
+
+      - name: Verify Dynamic Context Engine
+        run: |
+          python3 .trellis/scripts/dynamic_context.py --format text

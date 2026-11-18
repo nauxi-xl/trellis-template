@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Backend quality verification and test standards"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Frontend quality verification and lint standards"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Guidelines for integrating verification scripts cleanly into Trellis"}

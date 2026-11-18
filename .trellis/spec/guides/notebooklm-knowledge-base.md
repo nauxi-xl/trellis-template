@@ -87,6 +87,11 @@ When a task surfaces non-obvious knowledge, novel bug fixes, or performance insi
    nlm source add vkgl --url "<spec-url>"
    ```
 
+### 3. Automated Deep Research via `/research` Skill
+When exploring a new library, SDK, or technical domain from scratch:
+- Invoke `/research <topic>` or activate the [.agents/skills/research/SKILL.md](../../../.agents/skills/research/SKILL.md) skill.
+- The skill automatically queries Context7 and Web Search, locates or creates a topic-specific notebook in NotebookLM, and commits all source links and structured synthesis notes.
+
 ---
 
 ## Best Practices & Guidelines

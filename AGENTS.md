@@ -23,8 +23,14 @@ Managed by Trellis. Edits outside this block are preserved; edits inside may be 
 # Project Knowledge & Tools
 
 - **SDLC Adaptive Discovery**: Interactive 5-dimensional elicitation loop, SDLC model decision matrix (Agile, Waterfall, TDD, Spiral, Kanban), and specialized hybrid agent councils. See [.agents/skills/sdlc-adaptive-discovery/SKILL.md](.agents/skills/sdlc-adaptive-discovery/SKILL.md) and workflow `/sdlc-discovery`.
+- **Autonomous Research (/research)**: Combines Context7 (for up-to-date library/API docs) and Web Search with Google NotebookLM for persistent notebook creation, source ingestion, and synthesis note storage. See [.agents/skills/research/SKILL.md](.agents/skills/research/SKILL.md) and workflow `/research`.
+- **Self-Healing Verification Loop**: Autonomous compiler, type-checker, and test execution harness with bounded repair cycles and structured `<self-healing-feedback>` diagnostic envelopes via `python3 .trellis/scripts/verify.py`. See [.agents/skills/trellis-check/SKILL.md](.agents/skills/trellis-check/SKILL.md).
 - **NotebookLM Knowledge Base**: Grounded research, technical specifications, and architectural notes are accessible via the `gemini-notebook-mcp` MCP server and `nlm` CLI. See [.agents/rules/notebooklm.md](.agents/rules/notebooklm.md) and [.trellis/spec/guides/notebooklm-knowledge-base.md](.trellis/spec/guides/notebooklm-knowledge-base.md).
 - **Code Graph (Graphify)**: Architecture queries and code navigation are available via `graphify-out/` and `graphify query`. See [.agents/rules/graphify.md](.agents/rules/graphify.md).
+- **LSP Code Intelligence & Refactoring (/lsp)**: IDE-grade semantic analysis, type-aware code navigation, blast-radius analysis, and speculative safe edits across 30+ languages via the `agent-lsp` MCP server and CLI. See [.agents/skills/lsp/SKILL.md](.agents/skills/lsp/SKILL.md), [.agents/rules/lsp.md](.agents/rules/lsp.md), and [.trellis/spec/guides/lsp-code-intelligence.md](.trellis/spec/guides/lsp-code-intelligence.md).
+- **Git Isolated Worktrees**: Multi-agent concurrent task isolation, automated branching, and safe rebase/merge verification via `python3 .trellis/scripts/worktree.py`. See [.agents/rules/worktrees.md](.agents/rules/worktrees.md) and [.trellis/spec/guides/git-worktrees.md](.trellis/spec/guides/git-worktrees.md).
+- **Dynamic Context Engine**: Token-efficient adaptive context assembler that maps git diffs, active task state, and LSP/Graphify signals to scoped specs via `python3 .trellis/scripts/dynamic_context.py`. See [.trellis/spec/guides/dynamic-context.md](.trellis/spec/guides/dynamic-context.md).
+- **Automated CI/CD Pipelines**: Production GitHub Actions workflows for continuous integration, self-healing verification matrix, and PR branch compliance. See [.github/workflows/ci.yml](.github/workflows/ci.yml) and [.trellis/spec/guides/cicd-pipeline.md](.trellis/spec/guides/cicd-pipeline.md).
 
 # Multi-Agent & Platform Entry Points
 
@@ -52,5 +58,7 @@ This template assumes you have the following tools installed and configured:
 - **Graphify**: For knowledge graph queries and code navigation. Install via `uv tool install graphifyy`.
 - **NotebookLM MCP**: For accessing the NotebookLM knowledge base. Install via `uv tool install notebook-mcp-cli`.
 - **Context7**: For up-to-date document researches and context retrieval. Install via `npm install -g context7`.
+- **agent-lsp**: For semantic Language Server Protocol code intelligence and speculative refactoring. Install via `curl -fsSL https://raw.githubusercontent.com/blackwell-systems/agent-lsp/main/install.sh | sh` (or download to `~/.local/bin/agent-lsp`).
+- **Language Servers**: Project-specific language servers: `pyright` for Python (`uv tool install pyright`), `typescript-language-server` for TS/JS (`pnpm add -g typescript-language-server typescript`), `rust-analyzer` for Rust, `clangd` for C/C++, `gopls` for Go.
 
 Remember to ask user for any missing tools or configurations before proceeding with tasks. NotebookLM MCP and Context7 must be authenticated by user before use. Notify user if any of these tools are missing or not authenticated.

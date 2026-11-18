@@ -1,0 +1,4 @@
+{"step": "agent_lsp_binary_verification", "status": "passed", "details": "agent-lsp v0.24.2 installed in ~/.local/bin and responds to JSON-RPC stdio initialize"}
+{"step": "mcp_configs_verified", "status": "passed", "details": ".mcp.json and ~/.gemini/config/mcp_config.json configured"}
+{"step": "rules_and_skills_mirrored", "status": "passed", "details": ".agents/rules/lsp.md, .agents/skills/lsp/, .claude/skills/lsp/, .github/skills/lsp/"}
+{"step": "verify_script_dry_run", "status": "passed", "details": "python3 .trellis/scripts/verify.py --dry-run detects agent-lsp"}

@@ -53,6 +53,26 @@ def main() -> int:
             or data.get("additional_context")
             or ""
         )
+
+        dynamic_script = repo_root / ".trellis" / "scripts" / "dynamic_context.py"
+        dynamic_block = ""
+        if dynamic_script.is_file():
+            try:
+                d_res = subprocess.run(
+                    [sys.executable, str(dynamic_script), "--format", "prompt"],
+                    cwd=str(repo_root),
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                if d_res.returncode == 0 and d_res.stdout.strip():
+                    dynamic_block = d_res.stdout.strip()
+            except Exception:
+                pass
+
+        if dynamic_block:
+            context_text = f"{context_text}\n\n{dynamic_block}" if context_text else dynamic_block
+
         out = {
             "injectSteps": [
                 {

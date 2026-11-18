@@ -156,3 +156,18 @@ channel:
 #
 # prompt_injection:
 #   skip_keyword: "no-trellis"   # "" disables the escape hatch entirely
+
+#-------------------------------------------------------------------------------
+# Autonomous Verification & Self-Healing Loop
+#-------------------------------------------------------------------------------
+# Configures the project's verification commands executed by `.trellis/scripts/verify.py`
+# during Phase 2.2 and Phase 3 quality checks.
+# If omitted or values are empty, verify.py auto-detects commands based on project files.
+#
+# verification:
+#   typecheck: "npx tsc --noEmit"       # Python: "mypy ." or "pyright" | Rust: "cargo check"
+#   lint: "npm run lint"               # Python: "ruff check ."        | Rust: "cargo clippy"
+#   test: "npm test"                   # Python: "pytest -q"           | Rust: "cargo test" | Go: "go test ./..."
+#   fail_fast: true                    # Stop at the first failing stage (default: false)
+#   max_iterations: 3                  # Bounded self-healing repair attempts before Option A halt (default: 3)
+
