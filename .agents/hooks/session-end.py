@@ -205,6 +205,21 @@ def update_implement_md(task_dir: Path, git_info: dict, timestamp: str) -> bool:
         return False
 
 
+def _auto_sync_notebook(root: Path) -> None:
+    """Best-effort NotebookLM auto-sync on session end when a project notebook is bound."""
+    scripts_dir = root / ".trellis" / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    try:
+        import notebook_sync  # type: ignore[import-not-found]
+
+        st = notebook_sync.get_status(root)
+        if st.enabled and st.auto_sync and st.bound_notebook and st.nlm_available and st.pending_count > 0:
+            notebook_sync.sync_to_notebook(root=root)
+    except Exception:
+        pass
+
+
 def main() -> int:
     raw_input = ""
     try:
@@ -223,6 +238,8 @@ def main() -> int:
         now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         git_info = get_git_info(root)
         update_implement_md(task_dir, git_info, now_str)
+
+    _auto_sync_notebook(root)
 
     print(json.dumps({"decision": "allow"}))
     return 0

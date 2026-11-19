@@ -39,6 +39,8 @@ def find_trellis_root(start: Path) -> Path | None:
 
 def _resolve_active_task(root: Path, input_data: dict):
     scripts_dir = root / ".trellis" / "scripts"
+    if not (scripts_dir / "notebook_sync.py").is_file():
+        scripts_dir = Path(__file__).resolve().parent.parent.parent / ".trellis" / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
     try:
@@ -123,17 +125,41 @@ def load_breadcrumbs(root: Path) -> dict[str, str]:
 
 TOOL_PRIORITY_BLOCK = (
     "<tool-priority>\n"
-    "- Code Intelligence (agent-lsp FIRST): Before using raw grep/find/run_command or editing code symbols, "
-    "prioritize `agent-lsp` MCP (`find_symbol`, `find_references`, `find_callers`, `inspect_symbol`, "
-    "`blast_radius`, `preview_edit`, `safe_apply_edit`, `get_diagnostics`).\n"
+    "- Code Intelligence & Fast Location (agent-lsp & Graphify DIRECT): Use `graphify` (`query`, `path`, `explain`) "
+    "and `agent-lsp` MCP (`find_symbol`, `find_references`, `find_callers`, `inspect_symbol`, `blast_radius`, "
+    "`preview_edit`, `safe_apply_edit`, `get_diagnostics`) directly to locate code files/symbols without going "
+    "through NotebookLM as an intermediary.\n"
     "- Documentation (Context7 FIRST): Before using `search_web`/`WebSearch` or training data for any library, "
     "framework, SDK, API, or CLI tool, prioritize `context7` MCP (`resolve-library-id` -> `query-docs`).\n"
-    "- Project Knowledge & Memory (NotebookLM PROACTIVE): Before planning features, debugging recurring bugs, "
-    "or answering architecture/domain questions, check `gemini-notebook-mcp` (`notebook_list` -> `notebook_query` / "
-    "`cross_notebook_query`, or `nlm` CLI); after research, key decisions, or tricky fixes, save a synthesis note "
-    "via `note` (`action=\"create\"`) or `source_add`.\n"
+    "- Project Brain & Auto-Sync (NotebookLM): Use `gemini-notebook-mcp` (`notebook_list` -> `notebook_query` / "
+    "`cross_notebook_query`, or `nlm` CLI) as the project knowledge brain. If no relevant notebook exists, ask the "
+    "user whether to create/bind one (`notebook_sync.py --bind <id>`). Automatically update the bound notebook "
+    "whenever related specs, PRDs, docs, or architecture change (`note`/`source_add` + `notebook_sync.py --mark-synced`, "
+    "or `notebook_sync.py --sync`).\n"
     "</tool-priority>"
 )
+
+
+def _get_notebook_sync_hint(root: Path, config: dict) -> str:
+    """Return <notebook-sync> hint only when a notebook is missing or has pending changes."""
+    if isinstance(config, dict):
+        nb_cfg = config.get("notebooklm")
+        if isinstance(nb_cfg, dict) and nb_cfg.get("enabled") is False:
+            return ""
+    scripts_dir = root / ".trellis" / "scripts"
+    if not (scripts_dir / "notebook_sync.py").is_file():
+        scripts_dir = Path(__file__).resolve().parent.parent.parent / ".trellis" / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    try:
+        import notebook_sync  # type: ignore[import-not-found]
+
+        hint = notebook_sync.format_prompt_hint(root)
+        if hint and 'status="synced"' not in hint:
+            return hint
+    except Exception:
+        pass
+    return ""
 
 
 def _tool_priority_enabled(config: dict) -> bool:
@@ -192,6 +218,8 @@ DEFAULT_PROMPT_INJECTION_SKIP_KEYWORD = "no-trellis"
 def _read_trellis_config(root: Path) -> dict:
     """Load .trellis/config.yaml via the bundled trellis_config helper."""
     scripts_dir = root / ".trellis" / "scripts"
+    if not (scripts_dir / "notebook_sync.py").is_file():
+        scripts_dir = Path(__file__).resolve().parent.parent.parent / ".trellis" / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
     try:
@@ -251,6 +279,10 @@ def main() -> int:
         breadcrumb = build_breadcrumb(
             task_id, status, templates, source, include_tool_priority=include_priority
         )
+
+    nb_hint = _get_notebook_sync_hint(root, config) if include_priority else ""
+    if nb_hint:
+        breadcrumb = f"{breadcrumb}\n\n{nb_hint}"
 
     # AGY output contract: injectSteps with systemMessage
     output = {

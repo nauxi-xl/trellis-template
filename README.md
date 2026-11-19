@@ -108,20 +108,24 @@ Bạn chỉ cần **chat tự nhiên** với AI, hoặc gõ các lệnh ngắn (
 
 ---
 
-## 4. Kết nối & tương tác với NotebookLM
+## 4. Kết nối & tương tác với NotebookLM (Bộ não dự án) & Graphify
 
-Framework này coi **Google NotebookLM** là bộ nhớ dài hạn của dự án (nơi lưu tài liệu nghiên cứu, quyết định kiến trúc, nguyên nhân các lỗi khó).
+Framework phân tách rõ hai vai trò để AI vừa nhớ lâu vừa chạy nhanh:
+- **NotebookLM = Bộ não ghi nhớ mọi thông tin về dự án**: Lưu quyết định kiến trúc, thiết kế tính năng, tài liệu nghiên cứu và bài học sửa lỗi xuyên suốt nhiều phiên làm việc.
+- **Graphify = Bản đồ định vị code trực tiếp**: Giúp AI nhảy thẳng tới đúng file, hàm và luồng phụ thuộc cần sửa ngay lập tức mà **không phải hỏi vòng qua NotebookLM**.
 
-### AI sẽ tự động tương tác với NotebookLM khi nào?
-- **Trước khi thiết kế hoặc sửa lỗi khó**: AI tự kiểm tra `notebook_list` và truy vấn (`notebook_query`) các notebook liên quan để không lặp lại sai lầm cũ.
-- **Sau khi nghiên cứu (`/research`), sửa bug phức tạp, hoặc chốt phiên làm việc**: AI tự ghi chú tóm tắt (`note`) hoặc lưu nguồn tài liệu (`source_add`) vào notebook dự án.
+### AI tự động tương tác với NotebookLM thế nào?
+- **Khi chưa có notebook phù hợp**: Lúc tìm kiếm trên NotebookLM mà chưa thấy notebook nào của dự án, AI sẽ **chủ động hỏi bạn** xem có muốn tạo mới hoặc gắn một notebook sẵn có vào dự án không.
+- **Tự động cập nhật khi có thay đổi liên quan**: Sau khi bạn đã gắn notebook cho dự án, mỗi thay đổi về tài liệu, quy chuẩn (`.trellis/spec/`), bản thiết kế (`prd.md`, `design.md`) hoặc module code liên quan sẽ được AI và hook tự động đồng bộ ghi chú lên notebook.
+- **Trước khi thiết kế hoặc sửa lỗi khó**: AI tự tra cứu `notebook_list` và `notebook_query` để kế thừa các quyết định trước đó.
 
-### Mẹo nhỏ để AI dùng NotebookLM hiệu quả nhất
-1. Tạo 1 notebook riêng cho dự án của bạn (hoặc dùng notebook có sẵn) và đặt tên ngắn (alias) để AI dễ tìm:
+### Gắn notebook cho dự án (tùy chọn thủ công)
+1. Nếu muốn tạo/gắn sẵn notebook ngay từ đầu:
    ```bash
    nlm list notebooks
    nlm create notebook "Ten Du An Cua Toi"
    nlm alias set project <notebook-id-vua-tao>
+   python3 .trellis/scripts/notebook_sync.py --bind project
    ```
 2. Trong chat, bạn cũng có thể nhắc trực tiếp bất cứ lúc nào:
    - *"Kiểm tra xem NotebookLM của mình đang có những thông tin gì về phần X?"*

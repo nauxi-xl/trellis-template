@@ -222,11 +222,46 @@ def collect_lsp_status() -> Dict[str, str]:
     return {"status": "warning", "binary": lsp_bin, "info": "Servers partially available"}
 
 
+def collect_notebook_sync_status() -> Dict[str, Any]:
+    """Collect local NotebookLM binding and pending-change status (no network calls)."""
+    try:
+        scripts_dir = str(Path(__file__).resolve().parent)
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        import notebook_sync  # type: ignore[import-not-found]
+
+        st = notebook_sync.get_status(REPO_ROOT)
+        return {
+            "enabled": st.enabled,
+            "bound_notebook": st.bound_notebook,
+            "auto_sync": st.auto_sync,
+            "ask_if_missing": st.ask_if_missing,
+            "declined_missing": st.declined_missing,
+            "pending_count": st.pending_count,
+            "pending_paths": [c.path for c in st.pending_changes[:10]],
+            "prompt_hint": notebook_sync.format_prompt_hint(REPO_ROOT),
+        }
+    except Exception:
+        return {
+            "enabled": False,
+            "bound_notebook": None,
+            "pending_count": 0,
+            "pending_paths": [],
+            "prompt_hint": "",
+        }
+
+
 # -----------------------------------------------------------------------------
 # Formatter
 # -----------------------------------------------------------------------------
 
-def format_context_prompt(git_ctx: GitContext, task_ctx: Optional[TaskContext], specs: Dict[str, str], lsp_info: Dict[str, str]) -> str:
+def format_context_prompt(
+    git_ctx: GitContext,
+    task_ctx: Optional[TaskContext],
+    specs: Dict[str, str],
+    lsp_info: Dict[str, str],
+    notebook_info: Optional[Dict[str, Any]] = None,
+) -> str:
     """Format full dynamic context into an AI system instruction block."""
     lines: List[str] = [
         "<!-- TRELLIS_DYNAMIC_CONTEXT:START -->",
@@ -274,13 +309,21 @@ def format_context_prompt(git_ctx: GitContext, task_ctx: Optional[TaskContext], 
     lines.extend([
         "",
         f"- **LSP Intelligence**: {lsp_info.get('status')} ({lsp_info.get('info', '')})",
-        "<!-- TRELLIS_DYNAMIC_CONTEXT:END -->"
     ])
+    if notebook_info and notebook_info.get("prompt_hint"):
+        lines.append(str(notebook_info["prompt_hint"]))
+    lines.append("<!-- TRELLIS_DYNAMIC_CONTEXT:END -->")
 
     return "\n".join(lines)
 
 
-def format_context_text(git_ctx: GitContext, task_ctx: Optional[TaskContext], specs: Dict[str, str], lsp_info: Dict[str, str]) -> str:
+def format_context_text(
+    git_ctx: GitContext,
+    task_ctx: Optional[TaskContext],
+    specs: Dict[str, str],
+    lsp_info: Dict[str, str],
+    notebook_info: Optional[Dict[str, Any]] = None,
+) -> str:
     """Format concise summary for CLI output."""
     lines = [
         "=== Trellis Dynamic Context ===",
@@ -299,6 +342,9 @@ def format_context_text(git_ctx: GitContext, task_ctx: Optional[TaskContext], sp
         lines.append(f"Scoped Specs   : {spec_list}")
 
     lines.append(f"LSP Status     : {lsp_info.get('status')} ({lsp_info.get('info', '')})")
+    if notebook_info and notebook_info.get("enabled"):
+        nb_label = notebook_info.get("bound_notebook") or "(unbound)"
+        lines.append(f"NotebookLM     : {nb_label} (pending={notebook_info.get('pending_count', 0)})")
     return "\n".join(lines)
 
 
@@ -321,6 +367,7 @@ def main() -> int:
     task_ctx = collect_task_context()
     specs = resolve_scoped_specs(git_ctx.modified_files + git_ctx.untracked_files)
     lsp_info = collect_lsp_status()
+    notebook_info = collect_notebook_sync_status()
 
     if args.format == "json":
         data = {
@@ -328,12 +375,13 @@ def main() -> int:
             "task": asdict(task_ctx) if task_ctx else None,
             "scoped_specs": specs,
             "lsp": lsp_info,
+            "notebook_sync": {k: v for k, v in notebook_info.items() if k != "prompt_hint"},
         }
         print(json.dumps(data, indent=2))
     elif args.format == "prompt":
-        print(format_context_prompt(git_ctx, task_ctx, specs, lsp_info))
+        print(format_context_prompt(git_ctx, task_ctx, specs, lsp_info, notebook_info))
     else:
-        print(format_context_text(git_ctx, task_ctx, specs, lsp_info))
+        print(format_context_text(git_ctx, task_ctx, specs, lsp_info, notebook_info))
 
     return 0
 

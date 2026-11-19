@@ -60,14 +60,10 @@ Check available project notebooks to prevent fragmenting knowledge:
    - If a matching notebook already exists (e.g. `Research: Vulkan`, `vkgl`, or `auth-standards`):
      - Select it as the target notebook.
      - Optionally run `notebook_query` to check if the question was already researched.
-3. **Automatic Creation (Fallback)**:
-   - If no relevant notebook exists:
-     - Create a new notebook:
-       - MCP: Call `notebook_create(title="Research: <Clean Topic Name>")`
-       - CLI: Run `nlm notebook create "Research: <Clean Topic Name>"`
-     - Assign a memorable, slugified alias (e.g., `res-<topic>`):
-       - MCP: Call `alias(action="set", alias="res-<topic>", notebook_id="<notebook-id>")`
-       - CLI: Run `nlm alias set res-<topic> <notebook-id>`
+3. **Missing Notebook Prompt & Binding**:
+   - If no relevant notebook exists yet (and `notebooklm.project_notebook` in `.trellis/config.yaml` is empty):
+     - **Ask the user** whether they want to create a new notebook for this project/topic (proposing title `"Research: <Clean Topic Name>"` or the project name and alias) or bind an existing notebook.
+     - Once confirmed, create it via `notebook_create` / `nlm notebook create`, set an alias (`alias` / `nlm alias set`), and if it serves as the project brain, bind it via `python3 .trellis/scripts/notebook_sync.py --bind <alias-or-id>`.
 
 ---
 

@@ -6,12 +6,11 @@
 
 ## Overview
 
-NotebookLM serves as an external, grounded knowledge base and long-term project memory. While Trellis specs (`.trellis/spec/`) store repository-level coding conventions and git tracks source code, NotebookLM stores:
+NotebookLM serves as the **project's external brain and long-term memory**, while **Graphify** (`graphify-out/`) and **`agent-lsp`** act as **fast direct code locators** (never route code-location lookups through NotebookLM).
 
-- Architecture Decision Records (ADRs), design trade-offs, and system overviews.
-- Library, SDK, and framework research syntheses gathered via `/research`.
-- External documentation, RFCs, whitepapers, and API references too large for git.
-- Root-cause post-mortems, debugging notes, and performance benchmarks across sessions.
+- **NotebookLM stores**: Architecture Decision Records (ADRs), feature PRDs/design rationale, library/SDK research (`/research`), external docs/RFCs, and debugging post-mortems.
+- **Graphify + `agent-lsp` locate**: Exact files, modules, classes, callers, and dependency paths directly in the codebase.
+- **`.trellis/scripts/notebook_sync.py` automates**: Tracking project notebook binding (`notebooklm.project_notebook` in `.trellis/config.yaml`), asking the user when no relevant notebook exists, and auto-syncing knowledge/spec/code changes to the bound notebook.
 
 ---
 

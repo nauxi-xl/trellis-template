@@ -188,6 +188,31 @@ tool_priority:
   prefer_notebooklm: true
 
 #-------------------------------------------------------------------------------
+# NotebookLM Project Brain & Auto-Sync
+#-------------------------------------------------------------------------------
+# Treats NotebookLM (`gemini-notebook-mcp` / `nlm`) as the project's persistent
+# knowledge brain while Graphify + agent-lsp handle direct code navigation.
+#
+# - project_notebook: Bound notebook ID or alias (set automatically by
+#   `python3 .trellis/scripts/notebook_sync.py --bind <id-or-alias>`).
+# - ask_if_missing: Ask the user before creating a new notebook when none matches.
+# - auto_sync: Automatically sync tracked knowledge/spec/doc/code changes to
+#   the bound notebook when tasks progress or sessions wrap up.
+#
+notebooklm:
+  enabled: true
+  project_notebook: ""
+  auto_sync: true
+  ask_if_missing: true
+  tracked_paths:
+    - "AGENTS.md"
+    - "README.md"
+    - "USAGE.md"
+    - ".trellis/spec/"
+    - ".trellis/tasks/"
+    - "docs/"
+
+#-------------------------------------------------------------------------------
 # Remote Framework Updater
 #-------------------------------------------------------------------------------
 # Default remote and branch used by `.trellis/scripts/update_framework.py`.
