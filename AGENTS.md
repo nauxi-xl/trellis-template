@@ -52,9 +52,11 @@ This template assumes you have the following tools installed and configured:
 - **uv** (Optional): For easy Python workspace management. Install via your package manager or from [uv.dev](https://uv.dev/).
 - **Trellis CLI**: For task management, workflow commands, and context injection. Install via `npm install -g @mindfoldhq/trellis@latest`.
 - **Graphify**: For knowledge graph queries and code navigation. Install via `uv tool install graphifyy`.
-- **NotebookLM MCP**: For accessing the NotebookLM knowledge base. Install via `uv tool install notebook-mcp-cli`.
-- **Context7**: For up-to-date document researches and context retrieval. Install via `npm install -g context7`.
-- **agent-lsp**: For semantic Language Server Protocol code intelligence and speculative refactoring. Install via `curl -fsSL https://raw.githubusercontent.com/blackwell-systems/agent-lsp/main/install.sh | sh` (or download to `~/.local/bin/agent-lsp`).
-- **Language Servers**: Project-specific language servers: `pyright` for Python (`uv tool install pyright`), `typescript-language-server` for TS/JS (`pnpm add -g typescript-language-server typescript`), `rust-analyzer` for Rust, `clangd` for C/C++, `gopls` for Go.
+- **NotebookLM MCP**: For accessing the NotebookLM knowledge base (`notebooklm-mcp` and `nlm`). Install via `uv tool install notebooklm-mcp-cli`.
+- **Context7**: For up-to-date document researches and context retrieval (`@upstash/context7-mcp` and `context7` CLI). Install via `npm install -g @upstash/context7-mcp context7`.
+- **agent-lsp**: For semantic Language Server Protocol code intelligence and speculative refactoring. Install via `curl -fsSL https://raw.githubusercontent.com/blackwell-systems/agent-lsp/main/install.sh | INSTALL_DIR="$HOME/.local/bin" sh`.
+- **Language Servers**: Project-specific language servers: `pyright` for Python (`uv tool install pyright`), `typescript-language-server` for TS/JS (`npm install -g typescript-language-server typescript`), `rust-analyzer` for Rust, `clangd` for C/C++, `gopls` for Go.
+
+> **Quick Setup**: Run `./scripts/install-tools.sh` (Linux/macOS/WSL) or `./scripts/install-tools.ps1` (Windows PowerShell) to install and verify all framework tools automatically.
 
 Remember to ask user for any missing tools or configurations before proceeding with tasks. NotebookLM MCP and Context7 must be authenticated by user before use. Notify user if any of these tools are missing or not authenticated.

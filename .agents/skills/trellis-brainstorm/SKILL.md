@@ -48,6 +48,7 @@ Use a concise title from the user's request. Both the title and `--description` 
    - code, tests, fixtures, and configs
    - README files, docs, existing specs, and domain notes
    - related Trellis tasks, research files, and session history when present
+   - project notebooks in NotebookLM (`notebook_list` -> `notebook_query` via `gemini-notebook-mcp` or `nlm`) for prior architecture decisions and research notes
 3. Separate what you found into:
    - confirmed facts
    - product intent still needed from the user

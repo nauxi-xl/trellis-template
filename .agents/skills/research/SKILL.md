@@ -27,7 +27,7 @@ The skill operates seamlessly using both MCP tools and CLI interfaces:
 2. **NotebookLM (Persistent Grounded Knowledge Base)**:
    - MCP Server: `gemini-notebook-mcp`
    - Tools: `notebook_list`, `notebook_create`, `notebook_get`, `source_add`, `note`, `alias`, `notebook_query`
-   - Alternative CLI: `nlm` (`/home/nauxi/.local/bin/nlm`) for terminal environments.
+   - Alternative CLI: `nlm` (available on `PATH`) for terminal environments.
 3. **Web Search (Conceptual & General Research)**:
    - Native tool: `search_web` or NotebookLM `research_start` / `research_import`.
 

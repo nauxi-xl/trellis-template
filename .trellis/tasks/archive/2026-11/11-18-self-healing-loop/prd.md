@@ -7,9 +7,9 @@ Provide AI coding agents in Trellis with an autonomous, self-correcting feedback
 ## Confirmed Facts & Technical Context
 
 - **Current State**:
-  - `trellis-check` ([.agents/skills/trellis-check/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-check/SKILL.md)) defines a manual review checklist and instructs the agent to run project checks, but lacks an automated discovery runner, structured diagnostic parsing, and loop management.
+  - `trellis-check` ([.agents/skills/trellis-check/SKILL.md](.agents/skills/trellis-check/SKILL.md)) defines a manual review checklist and instructs the agent to run project checks, but lacks an automated discovery runner, structured diagnostic parsing, and loop management.
   - `.trellis/config.yaml` holds project-level settings (session commit, packages, channel worker guard), but does not have a declarative `verification` section for test/lint commands.
-  - Phase 2.2 in [.trellis/workflow.md](file:///home/nauxi/projects/trellis-template/.trellis/workflow.md) states "If issues are found → fix → re-check, until green", but provides no automated diagnostic envelope.
+  - Phase 2.2 in [.trellis/workflow.md](.trellis/workflow.md) states "If issues are found → fix → re-check, until green", but provides no automated diagnostic envelope.
 
 ## Key Decisions
 
@@ -35,7 +35,7 @@ Provide AI coding agents in Trellis with an autonomous, self-correcting feedback
   - Integrate with Phase 2.2 and Phase 3.4 so the agent automatically triggers the self-healing cycle before attempting to commit or finish work.
 - **REQ-5 (Documentation & Configuration Schema)**:
   - Update `.trellis/config.yaml` with documented `verification` settings.
-  - Document the self-healing loop in [AGENTS.md](file:///home/nauxi/projects/trellis-template/AGENTS.md) and [.trellis/spec/guides/](file:///home/nauxi/projects/trellis-template/.trellis/spec/guides/).
+  - Document the self-healing loop in [AGENTS.md](AGENTS.md) and [.trellis/spec/guides/](.trellis/spec/guides/).
 
 ## Acceptance Criteria
 

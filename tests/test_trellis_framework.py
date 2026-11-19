@@ -161,6 +161,7 @@ class TestFrameworkCLIAndHooks(unittest.TestCase):
         self.assertIn("<tool-priority>", msg_text)
         self.assertIn("agent-lsp", msg_text)
         self.assertIn("context7", msg_text)
+        self.assertIn("gemini-notebook-mcp", msg_text)
 
         skip_input = json.dumps({"cwd": str(REPO_ROOT), "prompt": "please run no-trellis here"})
         res_skip = subprocess.run(
@@ -314,6 +315,29 @@ class TestFrameworkCLIAndHooks(unittest.TestCase):
             )
             self.assertEqual(allowed_grep.get("decision"), "allow")
             self.assertNotIn("reason", allowed_grep)
+
+            # NotebookLM MCP and nlm CLI calls are recognized and tracked in state
+            run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-3",
+                    "toolCall": {"name": "call_mcp_tool", "args": {"ServerName": "gemini-notebook-mcp", "ToolName": "notebook_list"}},
+                },
+                mode="enforce",
+            )
+            state_data = json.loads((tmp_root / ".trellis" / ".runtime" / "tool-priority-state.json").read_text(encoding="utf-8"))
+            self.assertTrue(state_data["enf-3"]["notebooklm_used"])
+
+            run_hook(
+                tmp_root,
+                {
+                    "conversationId": "enf-4",
+                    "toolCall": {"name": "run_command", "args": {"CommandLine": "nlm list notebooks"}},
+                },
+                mode="enforce",
+            )
+            state_data = json.loads((tmp_root / ".trellis" / ".runtime" / "tool-priority-state.json").read_text(encoding="utf-8"))
+            self.assertTrue(state_data["enf-4"]["notebooklm_used"])
 
     def test_update_framework_check_apply_preserve_and_rollback(self) -> None:
         updater = SCRIPTS_DIR / "update_framework.py"
@@ -560,6 +584,55 @@ class TestFrameworkCLIAndHooks(unittest.TestCase):
             self.assertIn("<framework-update-available>", out_msg)
             self.assertIn("0.8.0", out_msg)
             self.assertIn("ask if they would like to update", out_msg)
+
+    def test_template_portability_no_machine_specific_paths(self) -> None:
+        import re
+
+        # Match /home/<user>/, /Users/<user>/, or file:/// URLs in repo files
+        pattern = re.compile(r"(/home/[A-Za-z0-9_.-]+/|/Users/[A-Za-z0-9_.-]+/|file:///)")
+        scan_roots = [
+            REPO_ROOT / "AGENTS.md",
+            REPO_ROOT / "USAGE.md",
+            REPO_ROOT / ".mcp.json",
+            REPO_ROOT / ".mcp.json.example",
+            REPO_ROOT / ".agents",
+            REPO_ROOT / ".claude",
+            REPO_ROOT / ".github",
+            REPO_ROOT / ".trellis",
+            REPO_ROOT / "scripts",
+        ]
+        violations: list[str] = []
+        for entry in scan_roots:
+            if not entry.exists():
+                continue
+            files = [entry] if entry.is_file() else [p for p in entry.rglob("*") if p.is_file()]
+            for f in files:
+                if "__pycache__" in f.parts or ".runtime" in f.parts or ".worktrees" in f.parts:
+                    continue
+                if f.suffix in {".pyc", ".png", ".jpg", ".sqlite", ".db"}:
+                    continue
+                try:
+                    text = f.read_text(encoding="utf-8")
+                except UnicodeDecodeError:
+                    continue
+                for idx, line in enumerate(text.splitlines(), 1):
+                    if pattern.search(line):
+                        violations.append(f"{f.relative_to(REPO_ROOT)}:{idx}: {line.strip()}")
+
+        self.assertEqual(violations, [], msg="Found machine-specific absolute paths:\n" + "\n".join(violations))
+
+    def test_install_tools_script_help_and_dry_run(self) -> None:
+        installer = REPO_ROOT / "scripts" / "install-tools.sh"
+        self.assertTrue(installer.is_file())
+        if shutil.which("bash"):
+            res_help = subprocess.run(
+                ["bash", str(installer), "--help"],
+                cwd=str(REPO_ROOT),
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(res_help.returncode, 0, msg=res_help.stderr)
+            self.assertIn("Usage:", res_help.stdout)
 
 
 if __name__ == "__main__":

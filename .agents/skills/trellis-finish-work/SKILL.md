@@ -53,3 +53,7 @@ python3 ./.trellis/scripts/add_session.py \
 ```
 
 Use the work-commit hashes produced in Phase 3.4. This produces a `chore: record journal` commit.
+
+## Step 5: Persist Key Learnings to NotebookLM (When Applicable)
+
+If this session produced non-obvious architectural decisions, research findings, or bug post-mortems and NotebookLM (`gemini-notebook-mcp` / `nlm`) is authenticated, save a brief synthesis note to the project's notebook (`note` `action="create"` or `nlm note create`).

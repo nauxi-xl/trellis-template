@@ -22,9 +22,9 @@
     - Mirror to `.github/skills/research/SKILL.md`
 
 - [x] **Phase 3: Documentation & Knowledge Graph Update**
-  - [x] 3.1 Update [AGENTS.md](file:///home/nauxi/projects/trellis-template/AGENTS.md) to document `/research` alongside SDLC discovery and NotebookLM rules.
-  - [x] 3.2 Update [CLAUDE.md](file:///home/nauxi/projects/trellis-template/CLAUDE.md) to list the `/research` command and skill.
-  - [x] 3.3 Update [.trellis/spec/guides/notebooklm-knowledge-base.md](file:///home/nauxi/projects/trellis-template/.trellis/spec/guides/notebooklm-knowledge-base.md) to mention the automated `/research` skill pattern.
+  - [x] 3.1 Update [AGENTS.md](AGENTS.md) to document `/research` alongside SDLC discovery and NotebookLM rules.
+  - [x] 3.2 Update [CLAUDE.md](CLAUDE.md) to list the `/research` command and skill.
+  - [x] 3.3 Update [.trellis/spec/guides/notebooklm-knowledge-base.md](.trellis/spec/guides/notebooklm-knowledge-base.md) to mention the automated `/research` skill pattern.
 
 - [x] **Phase 4: Verification & Quality Gate**
   - [x] 4.1 Validate skill markdown formatting, links, and YAML frontmatter.

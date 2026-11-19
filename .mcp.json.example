@@ -9,7 +9,7 @@
       "args": ["-y", "@upstash/context7-mcp"]
     },
     "gemini-notebook-mcp": {
-      "command": "notebook-mcp",
+      "command": "notebooklm-mcp",
       "args": []
     }
   }

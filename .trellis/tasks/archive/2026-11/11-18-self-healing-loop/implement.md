@@ -23,7 +23,7 @@
   - [x] 3.2 Synchronize updated `trellis-check` skill to platform directories:
     - `.claude/skills/trellis-check/SKILL.md`
     - `.github/skills/trellis-check/SKILL.md`
-  - [x] 3.3 Update [AGENTS.md](file:///home/nauxi/projects/trellis-template/AGENTS.md) and [CLAUDE.md](file:///home/nauxi/projects/trellis-template/CLAUDE.md) with `verify.py` and self-healing verification documentation.
+  - [x] 3.3 Update [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) with `verify.py` and self-healing verification documentation.
 
 - [x] **Phase 4: Verification & Quality Testing**
   - [x] 4.1 Run `python3 .trellis/scripts/verify.py --help` and verify flag parsing.

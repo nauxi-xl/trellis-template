@@ -130,7 +130,7 @@ Required Action:
 
 ### 3. Skill & Workflow Integration
 * **`trellis-check` Skill Update**:
-  - Replaces manual instructions in Step 3 of [.agents/skills/trellis-check/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-check/SKILL.md) with executing `python3 ./.trellis/scripts/verify.py`.
+  - Replaces manual instructions in Step 3 of [.agents/skills/trellis-check/SKILL.md](.agents/skills/trellis-check/SKILL.md) with executing `python3 ./.trellis/scripts/verify.py`.
   - Injects the iterative repair loop directly into the skill steps.
 * **`AGENTS.md` and `CLAUDE.md` Update**:
   - Documents `verify.py` and the self-healing feedback loop as standard tooling under Project Knowledge & Tools.

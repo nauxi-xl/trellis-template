@@ -128,6 +128,10 @@ TOOL_PRIORITY_BLOCK = (
     "`blast_radius`, `preview_edit`, `safe_apply_edit`, `get_diagnostics`).\n"
     "- Documentation (Context7 FIRST): Before using `search_web`/`WebSearch` or training data for any library, "
     "framework, SDK, API, or CLI tool, prioritize `context7` MCP (`resolve-library-id` -> `query-docs`).\n"
+    "- Project Knowledge & Memory (NotebookLM PROACTIVE): Before planning features, debugging recurring bugs, "
+    "or answering architecture/domain questions, check `gemini-notebook-mcp` (`notebook_list` -> `notebook_query` / "
+    "`cross_notebook_query`, or `nlm` CLI); after research, key decisions, or tricky fixes, save a synthesis note "
+    "via `note` (`action=\"create\"`) or `source_add`.\n"
     "</tool-priority>"
 )
 

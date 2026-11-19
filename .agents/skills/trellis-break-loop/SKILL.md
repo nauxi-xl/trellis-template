@@ -62,6 +62,7 @@ Solidify insights into the system:
 
 - [ ] Update `.trellis/spec/guides/` thinking guides
 - [ ] Update relevant `.trellis/spec/` docs
+- [ ] Save a concise root-cause & prevention note in the project's NotebookLM notebook (`gemini-notebook-mcp` `note` `action="create"` or `nlm note create`) if NotebookLM is configured
 - [ ] Create issue record (if applicable)
 - [ ] Create feature ticket for root fix
 - [ ] Update check guidelines if needed

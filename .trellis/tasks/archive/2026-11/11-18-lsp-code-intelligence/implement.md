@@ -3,7 +3,7 @@
 ## Implemented Changes
 
 1. **Installed & Verified `agent-lsp`**:
-   - Downloaded and verified standalone `agent-lsp` v0.24.2 binary in `/home/nauxi/.local/bin/agent-lsp`.
+   - Downloaded and verified standalone `agent-lsp` v0.24.2 binary in `~/.local/bin/agent-lsp`.
    - Verified JSON-RPC stdio initialization and 66 code intelligence tools across 32 languages.
    - Installed `pyright` and `typescript-language-server` for language-specific analysis.
 

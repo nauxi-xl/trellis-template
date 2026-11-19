@@ -45,8 +45,9 @@ LSP_PRIORITY_MSG = (
 
 CONTEXT7_PRIORITY_MSG = (
     "[Tool Priority: Context7 First] Prefer Context7 MCP "
-    "(resolve-library-id -> query-docs) before search_web/WebSearch when looking up "
-    "library, framework, SDK, API, or CLI documentation."
+    "(resolve-library-id -> query-docs) for library/API docs and gemini-notebook-mcp "
+    "(notebook_list -> notebook_query) for saved project knowledge before search_web/WebSearch; "
+    "persist key research findings via note/source_add."
 )
 
 _CODE_EXTENSIONS = {
@@ -218,6 +219,19 @@ def _is_context7_call(name: str, args: dict[str, Any]) -> bool:
     return False
 
 
+def _is_notebooklm_call(name: str, args: dict[str, Any]) -> bool:
+    if name == "call_mcp_tool" and str(args.get("ServerName", "")).strip().lower() == "gemini-notebook-mcp":
+        return True
+    lowered = name.lower()
+    if lowered.startswith(("mcp_gemini-notebook-mcp", "mcp__gemini-notebook-mcp")):
+        return True
+    if name in ("run_command", "Bash"):
+        cmd = str(args.get("CommandLine") or args.get("command") or "")
+        if re.search(r"(?:^|[;&|\s])nlm\b", cmd):
+            return True
+    return False
+
+
 def _classify_fallback_tool(name: str, args: dict[str, Any]) -> tuple[str | None, bool]:
     """Return `(category, enforceable)` where category is `'lsp'` | `'context7'` | None."""
     if name in _CODE_SEARCH_TOOLS:
@@ -292,6 +306,7 @@ def main() -> int:
         {
             "lsp_used": False,
             "context7_used": False,
+            "notebooklm_used": False,
             "lsp_nudged": False,
             "context7_nudged": False,
         },
@@ -304,6 +319,11 @@ def main() -> int:
 
     if _is_context7_call(tool_name, tool_args):
         session_state["context7_used"] = True
+        _save_state(state_path, state)
+        return _emit_decision("allow", is_agy=is_agy)
+
+    if _is_notebooklm_call(tool_name, tool_args):
+        session_state["notebooklm_used"] = True
         _save_state(state_path, state)
         return _emit_decision("allow", is_agy=is_agy)
 

@@ -38,6 +38,8 @@ cat .trellis/spec/<package>/<layer>/index.md   # for each relevant layer
 
 Index files list the specific guideline docs to read when you actually start coding.
 
+If the project uses NotebookLM (`gemini-notebook-mcp` / `nlm`), also run `notebook_list` (or `nlm list notebooks`) to check for existing project/domain notebooks before planning or answering architectural questions.
+
 ## Step 4: Decide next action
 From Step 1 you know the current task and status. Check the task directory:
 

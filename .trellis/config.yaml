@@ -185,6 +185,7 @@ tool_priority:
   mode: "advisory"
   prefer_lsp: true
   prefer_context7: true
+  prefer_notebooklm: true
 
 #-------------------------------------------------------------------------------
 # Remote Framework Updater

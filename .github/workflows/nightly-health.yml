@@ -31,7 +31,10 @@ jobs:
           npm view @mindfoldhq/trellis version || true
 
           echo "Checking Graphify latest release..."
-          npm view graphifyy version 2>/dev/null || true
+          curl -fsSL https://pypi.org/pypi/graphifyy/json | python3 -c "import sys, json; print(json.load(sys.stdin)['info']['version'])" || true
+
+          echo "Checking NotebookLM MCP CLI latest release..."
+          curl -fsSL https://pypi.org/pypi/notebooklm-mcp-cli/json | python3 -c "import sys, json; print(json.load(sys.stdin)['info']['version'])" || true
 
           echo "Checking agent-lsp latest release..."
           curl -fsSL https://api.github.com/repos/blackwell-systems/agent-lsp/releases/latest | grep '"tag_name"' || true

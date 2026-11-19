@@ -7,7 +7,7 @@ Provide developers and AI agents with a specialized, autonomous `/research` capa
 ## Confirmed Facts & Technical Context
 
 - **NotebookLM Integration**:
-  - The framework provides full integration with Google NotebookLM via the `gemini-notebook-mcp` MCP server and `nlm` CLI ([.agents/rules/notebooklm.md](file:///home/nauxi/projects/trellis-template/.agents/rules/notebooklm.md) and [.trellis/spec/guides/notebooklm-knowledge-base.md](file:///home/nauxi/projects/trellis-template/.trellis/spec/guides/notebooklm-knowledge-base.md)).
+  - The framework provides full integration with Google NotebookLM via the `gemini-notebook-mcp` MCP server and `nlm` CLI ([.agents/rules/notebooklm.md](.agents/rules/notebooklm.md) and [.trellis/spec/guides/notebooklm-knowledge-base.md](.trellis/spec/guides/notebooklm-knowledge-base.md)).
   - Supported MCP tools: `notebook_list`, `notebook_get`, `notebook_create`, `notebook_rename`, `source_add` (url/text/file), `note` (create/update/list), `alias`, and `notebook_query`.
   - Supported CLI commands: `nlm list notebooks`, `nlm query`, `nlm note create`, `nlm source add`, `nlm alias set`.
 - **Context7 Integration**:
@@ -42,7 +42,7 @@ Provide developers and AI agents with a specialized, autonomous `/research` capa
   - Run a validation query (`notebook_query` / `nlm query`) to verify that the ingested knowledge is indexed and queryable.
   - Present the user with a concise research digest, cited facts, and clickable/named references to the notebook ID and alias.
 - **REQ-8 (Multi-Platform Synchronization)**:
-  - Mirror or symlink the new skill to `.claude/skills/research/`, `.github/skills/research/`, and reference it in [AGENTS.md](file:///home/nauxi/projects/trellis-template/AGENTS.md) and [CLAUDE.md](file:///home/nauxi/projects/trellis-template/CLAUDE.md).
+  - Mirror or symlink the new skill to `.claude/skills/research/`, `.github/skills/research/`, and reference it in [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md).
 
 ## Out of Scope
 

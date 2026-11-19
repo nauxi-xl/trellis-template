@@ -36,8 +36,8 @@
 ## 1. Tổng Quan Kiến Trúc Skill
 
 Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định dạng **Portable Agent Skill Standard**:
-- Thư mục chuẩn: [.agents/skills/](file:///home/nauxi/projects/trellis-template/.agents/skills/) (Google Antigravity và chuẩn dùng chung).
-- Liên kết đồng bộ (symlink): [.claude/skills/](file:///home/nauxi/projects/trellis-template/.claude/skills/) (Claude Code) và [.github/skills/](file:///home/nauxi/projects/trellis-template/.github/skills/) (GitHub Copilot) được trỏ symlink trực tiếp về `../.agents/skills` để đảm bảo không lệch phiên bản.
+- Thư mục chuẩn: [.agents/skills/](.agents/skills/) (Google Antigravity và chuẩn dùng chung).
+- Liên kết đồng bộ (symlink): [.claude/skills/](.claude/skills/) (Claude Code) và [.github/skills/](.github/skills/) (GitHub Copilot) được trỏ symlink trực tiếp về `../.agents/skills` để đảm bảo không lệch phiên bản.
 - Cấu trúc tệp tiêu chuẩn: Mỗi skill bắt buộc chứa tệp `SKILL.md` với YAML frontmatter (`name`, `description`, `user-invocable`), đi kèm thư mục phụ trợ `scripts/`, `references/` nếu có.
 
 ```
@@ -75,7 +75,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 ## 3. Chi Tiết Từng Skill
 
 ### 1. `sdlc-adaptive-discovery`
-* **Vị trí**: [.agents/skills/sdlc-adaptive-discovery/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/sdlc-adaptive-discovery/SKILL.md)
+* **Vị trí**: [.agents/skills/sdlc-adaptive-discovery/SKILL.md](.agents/skills/sdlc-adaptive-discovery/SKILL.md)
 * **Kích hoạt**: Gõ `/sdlc-discovery` hoặc khi bắt đầu một dự án mới từ ý tưởng thô của người dùng.
 * **Mục đích**:
   - Thực hiện chu trình vấn đáp sâu 5 chiều: Nghiệp vụ (Business), Kỹ thuật (Technical), Rủi ro (Risk), Vận hành (Operational), và Trải nghiệm người dùng (UX).
@@ -84,7 +84,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Tài liệu kế hoạch SDLC, bảng ma trận quyết định và khởi tạo task PRD nền tảng.
 
 ### 2. `trellis-start`
-* **Vị trí**: [.agents/skills/trellis-start/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-start/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-start/SKILL.md](.agents/skills/trellis-start/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-start` khi bắt đầu một phiên làm việc mới hoặc chuyển đổi ngữ cảnh.
 * **Mục đích**:
   - Đọc danh tính lập trình viên (`init_developer.py`), trạng thái git (`git status`).
@@ -93,7 +93,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Báo cáo trạng thái phiên làm việc và hướng dẫn hành động tiếp theo.
 
 ### 3. `trellis-brainstorm`
-* **Vị trí**: [.agents/skills/trellis-brainstorm/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-brainstorm/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-brainstorm/SKILL.md](.agents/skills/trellis-brainstorm/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-brainstorm` hoặc khi yêu cầu chưa rõ ràng, có nhiều hướng tiếp cận hợp lệ.
 * **Mục đích**:
   - Đặt từng câu hỏi giá trị cao (High-value questions) một lần một, tránh làm người dùng choáng ngợp.
@@ -102,7 +102,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Bản `prd.md` đầy đủ yêu cầu, ràng buộc kỹ thuật và tiêu chí nghiệm thu (acceptance criteria).
 
 ### 4. `research`
-* **Vị trí**: [.agents/skills/research/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/research/SKILL.md)
+* **Vị trí**: [.agents/skills/research/SKILL.md](.agents/skills/research/SKILL.md)
 * **Kích hoạt**: Gõ `/research <chủ đề>` (ví dụ: `/research nextjs 15 app router`, `/research vulkan compute shaders`).
 * **Mục đích**:
   - Kết hợp **Context7 MCP** để truy xuất tài liệu phiên bản mới nhất từ trang chủ thư viện / SDK / API.
@@ -110,7 +110,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Sổ tay NotebookLM, bản tóm tắt kỹ thuật chuyên sâu kèm code snippet và liên kết tham chiếu.
 
 ### 5. `trellis-before-dev`
-* **Vị trí**: [.agents/skills/trellis-before-dev/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-before-dev/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-before-dev/SKILL.md](.agents/skills/trellis-before-dev/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-before-dev` trước khi bắt đầu chỉnh sửa hoặc thêm mới code trong một package/layer.
 * **Mục đích**:
   - Nạp các quy chuẩn kiến trúc hiện có từ `.trellis/spec/` (Frontend, Backend, Database, Error Handling).
@@ -119,7 +119,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Danh sách checklist và ràng buộc kiến trúc cần tuân thủ trong lần sửa đổi này.
 
 ### 6. `lsp`
-* **Vị trí**: [.agents/skills/lsp/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/lsp/SKILL.md)
+* **Vị trí**: [.agents/skills/lsp/SKILL.md](.agents/skills/lsp/SKILL.md)
 * **Kích hoạt**: Gõ `/lsp`, `/lsp-refactor`, `/lsp-safe-edit` hoặc khi cần phân tích cấu trúc code, đổi tên symbol hay refactor.
 * **Mục đích**:
   - Sử dụng công cụ **`agent-lsp`** (hỗ trợ hơn 32 ngôn ngữ) thay vì grep mù quáng:
@@ -130,7 +130,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Báo cáo phạm vi ảnh hưởng, bản sửa đổi speculatively verified và mã nguồn an toàn.
 
 ### 7. `trellis-continue`
-* **Vị trí**: [.agents/skills/trellis-continue/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-continue/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-continue/SKILL.md](.agents/skills/trellis-continue/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-continue` khi quay lại làm việc sau giờ nghỉ hoặc trong phiên làm việc mới.
 * **Mục đích**:
   - Định vị chính xác giai đoạn hiện tại (Phase 1: Plan, Phase 2: Execute, Phase 3: Finish) dựa trên trạng thái của task active.
@@ -138,7 +138,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Hướng dẫn bước tiếp theo cần thực thi theo đúng `workflow.md`.
 
 ### 8. `trellis-check`
-* **Vị trí**: [.agents/skills/trellis-check/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-check/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-check/SKILL.md](.agents/skills/trellis-check/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-check` sau khi viết code xong hoặc trước khi commit.
 * **Mục đích**:
   - Chạy bộ kiểm thử tự phục hồi thông qua `python3 .trellis/scripts/verify.py`.
@@ -147,7 +147,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Báo cáo kiểm định chất lượng: PASS (xanh) hoặc mã envelope lỗi chi tiết.
 
 ### 9. `trellis-break-loop`
-* **Vị trí**: [.agents/skills/trellis-break-loop/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-break-loop/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-break-loop/SKILL.md](.agents/skills/trellis-break-loop/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-break-loop` khi phát hiện một bug đã sửa nhưng tiếp tục phát sinh lại hoặc các bài test liên tục fail.
 * **Mục đích**:
   - Phân loại nguyên nhân gốc rễ (Root Cause Category).
@@ -156,7 +156,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Báo cáo phân tích hồi quy chuyên sâu và bài test mới chống tái phát bug.
 
 ### 10. `trellis-finish-work`
-* **Vị trí**: [.agents/skills/trellis-finish-work/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-finish-work/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-finish-work/SKILL.md](.agents/skills/trellis-finish-work/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-finish-work` sau khi đã commit code hoàn tất ở Phase 3.
 * **Mục đích**:
   - Ghi nhật ký tóm tắt phiên làm việc vào `.trellis/workspace/<Developer>/journal-1.md`.
@@ -165,7 +165,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Cập nhật tệp journal và dọn sạch danh sách active task.
 
 ### 11. `trellis-update-spec`
-* **Vị trí**: [.agents/skills/trellis-update-spec/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-update-spec/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-update-spec/SKILL.md](.agents/skills/trellis-update-spec/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-update-spec` khi vừa rút ra một bài học kinh nghiệm, thiết kế một hợp đồng API mới hoặc sau khi sửa lỗi phức tạp.
 * **Mục đích**:
   - Cập nhật các quy ước code sống (living specifications) trong `.trellis/spec/`.
@@ -173,7 +173,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Tệp đặc tả được bổ sung quy định mới kèm ví dụ thực tế.
 
 ### 12. `trellis-session-insight`
-* **Vị trí**: [.agents/skills/trellis-session-insight/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-session-insight/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-session-insight/SKILL.md](.agents/skills/trellis-session-insight/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-session-insight` hoặc hỏi trợ lý: *"Trước đây chúng ta đã giải quyết vấn đề X như thế nào?"*.
 * **Mục đích**:
   - Sử dụng lệnh `trellis mem` để tìm kiếm ngược lại lịch sử trò chuyện qua các nền tảng (Claude Code, Codex, OpenCode, Antigravity).
@@ -181,7 +181,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Trích dẫn hội thoại gốc và bối cảnh giải pháp trước đây.
 
 ### 13. `trellis-spec-bootstrap`
-* **Vị trí**: [.agents/skills/trellis-spec-bootstrap/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-spec-bootstrap/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-spec-bootstrap/SKILL.md](.agents/skills/trellis-spec-bootstrap/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-spec-bootstrap` khi áp dụng Trellis vào một repository code có sẵn nhưng chưa có thư mục `.trellis/spec/`.
 * **Mục đích**:
   - Quét mã nguồn hiện tại, phân tích layer (frontend, backend, infra, shared).
@@ -189,7 +189,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Bộ khung đặc tả hoàn chỉnh và sẵn sàng sử dụng trong `.trellis/spec/`.
 
 ### 14. `trellis-channel`
-* **Vị trí**: [.agents/skills/trellis-channel/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-channel/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-channel/SKILL.md](.agents/skills/trellis-channel/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-channel` khi cần phối hợp nhiều agent song song (Multi-Agent Swarm / Workers).
 * **Mục đích**:
   - Quản lý message board sự kiện dùng chung cho các sub-agent thông qua `trellis channel`.
@@ -197,7 +197,7 @@ Framework `trellis-template` chuẩn hóa toàn bộ kỹ năng dưới định 
 * **Đầu ra**: Hệ thống kênh liên lạc thời gian thực giữa các tác tử AI.
 
 ### 15. `trellis-meta`
-* **Vị trí**: [.agents/skills/trellis-meta/SKILL.md](file:///home/nauxi/projects/trellis-template/.agents/skills/trellis-meta/SKILL.md)
+* **Vị trí**: [.agents/skills/trellis-meta/SKILL.md](.agents/skills/trellis-meta/SKILL.md)
 * **Kích hoạt**: Gõ `/trellis-meta` khi người dùng muốn tùy biến kiến trúc của chính framework Trellis bên trong repository.
 * **Mục đích**:
   - Hướng dẫn chỉnh sửa hooks, chuyển đổi workflow template (native, tdd, channel-driven), cấu hình sub-agent definitions trong `.trellis/agents/`.
@@ -249,9 +249,9 @@ Sau đó kích hoạt skill `/lsp` để thực hiện refactor hoặc phân tí
 
 ### E. Kiến Trúc CI/CD Tự Động (`.github/workflows/`)
 Mọi commit và PR đều được thẩm định tự động qua:
-- [ci.yml](file://.github/workflows/ci.yml): Kiểm tra ma trận kiểm thử, `verify.py` và Trellis task.
-- [pr-verify.yml](file://.github/workflows/pr-verify.yml): Chặn PR từ nhánh `main` và kiểm soát tính toàn vẹn của nhánh cách ly.
-- [nightly-health.yml](file://.github/workflows/nightly-health.yml): Định kỳ kiểm tra toolchain.
+- [ci.yml](.github/workflows/ci.yml): Kiểm tra ma trận kiểm thử, `verify.py` và Trellis task.
+- [pr-verify.yml](.github/workflows/pr-verify.yml): Chặn PR từ nhánh `main` và kiểm soát tính toàn vẹn của nhánh cách ly.
+- [nightly-health.yml](.github/workflows/nightly-health.yml): Định kỳ kiểm tra toolchain.
 
 ### F. Cập Nhật Framework Từ Remote (`update_framework.py`)
 Kiểm tra và đồng bộ phiên bản mới của framework từ remote Git (giữ nguyên `.trellis/tasks/`, `.trellis/workspace/`, `.trellis/config.yaml` và các file tùy biến cục bộ):
@@ -272,3 +272,16 @@ python3 .trellis/scripts/update_framework.py --force
 python3 .trellis/scripts/update_framework.py --rollback
 ```
 > Khi bắt đầu phiên làm việc (`SessionStart`), hook tự động chạy `update_framework.py --session-start-prompt` để kiểm tra xem framework hiện tại có cũ hơn remote hay không; nếu có bản mới, trợ lý AI sẽ thông báo và hỏi bạn có muốn cập nhật trước khi bắt đầu công việc hay không (tắt kiểm tra tự động bằng `check_on_session_start: false` trong `.trellis/config.yaml` hoặc `TRELLIS_CHECK_REMOTE_ON_START=0`).
+
+### G. Cài Đặt Nhanh Công Cụ Trên Máy Mới (`scripts/install-tools.sh`)
+Khi clone template sang một máy mới, chạy script cài đặt để chuẩn bị đầy đủ toolchain (`trellis`, `graphify`, `notebooklm-mcp`/`nlm`, `context7`, `agent-lsp`, và các Language Server):
+```bash
+# Linux / macOS / WSL / Git Bash:
+./scripts/install-tools.sh --init-mcp
+
+# Hoặc chỉ kiểm tra trạng thái công cụ đã cài:
+./scripts/install-tools.sh --check
+
+# Windows PowerShell:
+.\scripts\install-tools.ps1 -InitMcp
+```
